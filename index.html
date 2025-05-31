@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק זיכרון מתמטי</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="game-setup" id="gameSetup">
+            <h1>משחק זיכרון מתמטי</h1>
+            <div class="user-selection">
+                <label for="userSelect">בחר משתמש:</label>
+                <select id="userSelect" class="user-select">
+                    <!-- Users will be added here dynamically -->
+                </select>
+                <a href="#" id="manageUsers" class="manage-users-link">ניהול משתמשים</a>
+            </div>
+            <div class="operation-selection">
+                <h2>בחר פעולות:</h2>
+                <label><input type="checkbox" id="addition" checked> חיבור</label>
+                <label><input type="checkbox" id="subtraction" checked> חיסור</label>
+                <label><input type="checkbox" id="multiplication"> כפל</label>
+                <label><input type="checkbox" id="division"> חילוק</label>
+            </div>
+            <div class="number-selection">
+                <h2>בחר מספרים:</h2>
+                <div class="number-grid">
+                    <!-- Numbers will be added dynamically -->
+                </div>
+            </div>
+            <button id="startGame" class="start-button">התחל משחק</button>
+            <a href="#" id="viewStats" class="stats-link">צפה בסטטיסטיקות</a>
+            <a href="#" id="showTutorial" class="tutorial-link">הוראות משחק</a>
+        </div>
+
+        <div class="game-screen" id="gameScreen" style="display: none;">
+            <div class="exercise-display">
+                <div id="exercise" class="exercise"></div>
+                <div class="timer-container">
+                    <div id="timer" class="timer"></div>
+                    <button id="pauseButton" class="pause-button" title="השהה">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div id="totalTimer" class="total-timer">סה"כ זמן: 0.0s</div>
+            </div>
+            <div class="character-reveal">
+                <div id="characterContainer" class="character-container">
+                    <!-- Character image will be added here -->
+                </div>
+                <div id="gridOverlay" class="grid-overlay">
+                    <!-- Grid overlay will be added dynamically -->
+                </div>
+            </div>
+            <div class="progress">
+                <div id="progressBar" class="progress-bar"></div>
+                <div id="progressText">0/20</div>
+            </div>
+        </div>
+
+        <div class="stats-screen" id="statsScreen" style="display: none;">
+            <h2>סטטיסטיקות תרגול</h2>
+            <div id="currentUserName" class="current-user"></div>
+            <div class="stats-tabs">
+                <button class="tab-button active" data-operation="addition">חיבור</button>
+                <button class="tab-button" data-operation="subtraction">חיסור</button>
+                <button class="tab-button" data-operation="multiplication">כפל</button>
+                <button class="tab-button" data-operation="division">חילוק</button>
+            </div>
+            <p>זמנים ממוצעים בשניות לכל שילוב:</p>
+            <div class="stats-container">
+                <!-- Stats table will be added here -->
+            </div>
+            <a href="#" id="backToGame" class="back-link">חזרה למשחק</a>
+        </div>
+
+        <div class="tutorial-screen" id="tutorialScreen" style="display: none;">
+            <h2>הוראות משחק</h2>
+            <div class="tutorial-content">
+                <h3>איך משחקים?</h3>
+                <ol>
+                    <li>בחר את סוגי הפעולות שברצונך לתרגל (חיבור, חיסור, כפל, חילוק)</li>
+                    <li>בחר את המספרים שברצונך לתרגל (1-20)</li>
+                    <li>לחץ על "התחל משחק"</li>
+                    <li>כאשר מופיע תרגיל:
+                        <ul>
+                            <li>אמור את התשובה בקול רם</li>
+                            <li>לחץ על מקש הרווח כדי לעבור לתרגיל הבא</li>
+                        </ul>
+                    </li>
+                    <li>ככל שתפתור יותר תרגילים, תמונה של דמות דיסני תתגלה בהדרגה</li>
+                    <li>לאחר 20 תרגילים, המשחק יסתיים ותוכל לראות את הסטטיסטיקות שלך</li>
+                </ol>
+                <h3>טיפים להורים:</h3>
+                <ul>
+                    <li>התחל עם מספרים קטנים ופחות אפשרויות כדי לבנות ביטחון</li>
+                    <li>הגדל בהדרגה את הקושי על ידי הוספת מספרים</li>
+                    <li>השתמש במשחק כדרך מהנה לתרגל עובדות מתמטיות</li>
+                    <li>עודד את הילד לומר את התשובה בקול רם לפני לחיצה על מקש הרווח</li>
+                    <li>חגגו את ההתקדמות והשלמת כל משחק</li>
+                </ul>
+            </div>
+            <a href="#" id="backFromTutorial" class="back-link">חזרה למשחק</a>
+        </div>
+
+        <div class="user-management-screen" id="userManagement" style="display: none;">
+            <h1>ניהול משתמשים</h1>
+            <div class="user-list">
+                <h2>משתמשים קיימים:</h2>
+                <div id="userList" class="user-list-container">
+                    <!-- Users will be added here dynamically -->
+                </div>
+            </div>
+            <div class="add-user">
+                <h2>הוסף משתמש חדש:</h2>
+                <div class="add-user-form">
+                    <input type="text" id="newUserName" placeholder="שם המשתמש" maxlength="20">
+                    <button id="addUser" class="add-button">הוסף</button>
+                </div>
+            </div>
+            <a href="#" id="backToGameFromUsers" class="back-link">חזרה למשחק</a>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html> 
