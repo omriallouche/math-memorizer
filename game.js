@@ -376,6 +376,15 @@ class MathMemoryGame {
                 this.handleAnswer();
             }
         });
+
+        // Next button listener
+        document.getElementById('nextButton').addEventListener('click', () => {
+            if (this.currentExercise < 20 && 
+                !this.isPaused && 
+                document.getElementById('gameScreen').style.display === 'block') {
+                this.handleAnswer();
+            }
+        });
     }
 
     showUserManagement() {

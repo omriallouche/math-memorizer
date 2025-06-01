@@ -442,4 +442,35 @@ label {
     color: #4ecdc4;
     margin-bottom: 1rem;
     font-weight: bold;
+}
+
+.next-button {
+    display: block;
+    width: 200px;
+    margin: 1rem auto;
+    padding: 1rem;
+    font-size: 1.2rem;
+    background: #4ecdc4;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.next-button:hover {
+    transform: scale(1.05);
+    background: #45b7af;
+}
+
+.next-button:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 600px) {
+    .next-button {
+        width: 150px;
+        padding: 0.8rem;
+        font-size: 1.1rem;
+    }
 } 
