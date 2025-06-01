@@ -39,11 +39,18 @@ class MathMemoryGame {
     async loadImages() {
         try {
             const response = await fetch('/list-images');
+            if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+            }
             const images = await response.json();
+            if (!Array.isArray(images) || images.length === 0) {
+                throw new Error('No images found in the response');
+            }
             this.characterImages = images.map(img => `images/${img}`);
             this.currentCharacter = Math.floor(Math.random() * this.characterImages.length);
         } catch (error) {
             console.error('Error loading images:', error);
+            console.log('Falling back to default images. Make sure the server is running with "npm start"');
             // Fallback to default images if server request fails
             this.characterImages = [
                 'images/character1.jpg',
