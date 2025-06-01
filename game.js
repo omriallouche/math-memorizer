@@ -42,6 +42,11 @@ class MathMemoryGame {
         const savedUsers = localStorage.getItem('mathGameUsers');
         if (savedUsers) {
             this.users = new Map(JSON.parse(savedUsers));
+            // Select the first user if one exists
+            const firstUser = this.users.keys().next().value;
+            if (firstUser) {
+                this.selectUser(firstUser);
+            }
         }
     }
 
@@ -184,6 +189,15 @@ class MathMemoryGame {
             checkbox.type = 'checkbox';
             checkbox.value = i;
             checkbox.checked = this.selectedNumbers.has(i);
+            checkbox.addEventListener('change', (e) => {
+                const num = parseInt(e.target.value);
+                if (e.target.checked) {
+                    this.selectedNumbers.add(num);
+                } else {
+                    this.selectedNumbers.delete(num);
+                }
+                this.saveUserSettings();
+            });
             label.appendChild(checkbox);
             label.appendChild(document.createTextNode(i));
             numberGrid.appendChild(label);
@@ -191,7 +205,12 @@ class MathMemoryGame {
 
         // Set operation checkboxes
         Object.keys(this.operations).forEach(operation => {
-            document.getElementById(operation).checked = this.operations[operation];
+            const checkbox = document.getElementById(operation);
+            checkbox.checked = this.operations[operation];
+            checkbox.addEventListener('change', (e) => {
+                this.operations[operation] = e.target.checked;
+                this.saveUserSettings();
+            });
         });
 
         // Create grid overlay
