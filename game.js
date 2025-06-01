@@ -17,11 +17,7 @@ class MathMemoryGame {
             division: false
         };
         this.gridCells = [];
-        this.characterImages = [
-            'images/character1.jpg',
-            'images/character2.jpg',
-            'images/character3.jpg'
-        ];
+        this.characterImages = [];
         this.currentCharacter = 0;
         this.revealOrder = [];
         this.timerInterval = null;
@@ -33,9 +29,36 @@ class MathMemoryGame {
         this.currentUser = null;
         this.users = new Map();
 
-        this.loadUsers();
-        this.initializeUI();
-        this.setupEventListeners();
+        this.loadImages().then(() => {
+            this.loadUsers();
+            this.initializeUI();
+            this.setupEventListeners();
+        });
+    }
+
+    async loadImages() {
+        try {
+            const response = await fetch('/list-images');
+            const images = await response.json();
+            this.characterImages = images.map(img => `images/${img}`);
+            this.currentCharacter = Math.floor(Math.random() * this.characterImages.length);
+        } catch (error) {
+            console.error('Error loading images:', error);
+            // Fallback to default images if server request fails
+            this.characterImages = [
+                'images/character1.jpg',
+                'images/character2.jpg',
+                'images/character3.jpg',
+                'images/character4.jpg',
+                'images/character5.jpg',
+                'images/character6.jpg',
+                'images/character7.jpg',
+                'images/character8.jpg',
+                'images/character9.jpg',
+                'images/character10.jpg'
+            ];
+            this.currentCharacter = Math.floor(Math.random() * this.characterImages.length);
+        }
     }
 
     loadUsers() {
@@ -216,6 +239,7 @@ class MathMemoryGame {
         // Create grid overlay
         const gridOverlay = document.getElementById('gridOverlay');
         gridOverlay.innerHTML = '';
+        this.gridCells = []; // Clear the grid cells array
         for (let i = 0; i < 20; i++) {
             const cell = document.createElement('div');
             cell.className = 'grid-cell';
@@ -339,7 +363,15 @@ class MathMemoryGame {
 
         // Spacebar listener
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && this.currentExercise < 20 && !this.isPaused) {
+            console.log('Key pressed:', e.code);
+            console.log('Game screen visible:', document.getElementById('gameScreen').style.display === 'block');
+            console.log('Current exercise:', this.currentExercise);
+            console.log('Is paused:', this.isPaused);
+            
+            if (e.code === 'Space' && 
+                this.currentExercise < 20 && 
+                !this.isPaused && 
+                document.getElementById('gameScreen').style.display === 'block') {
                 e.preventDefault();
                 this.handleAnswer();
             }
@@ -624,7 +656,7 @@ class MathMemoryGame {
             this.exerciseTimes[exercise.operation].set(exerciseKey, []);
         }
         this.exerciseTimes[exercise.operation].get(exerciseKey).push(timeTaken);
-        this.saveSettings();
+        this.saveUserStats();
 
         // Reveal next grid cell in random order
         this.gridCells[this.revealOrder[this.currentExercise]].style.opacity = '0';
@@ -678,8 +710,8 @@ class MathMemoryGame {
         document.getElementById('gameScreen').style.display = 'none';
         document.getElementById('gameSetup').style.display = 'block';
         
-        // Change character for next game
-        this.currentCharacter = (this.currentCharacter + 1) % this.characterImages.length;
+        // Select a random character for next game
+        this.currentCharacter = Math.floor(Math.random() * this.characterImages.length);
     }
 }
 
