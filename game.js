@@ -392,6 +392,25 @@ class MathMemoryGame {
                 this.handleAnswer();
             }
         });
+
+        document.getElementById('showReview').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showReview();
+        });
+
+        document.getElementById('backFromReview').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.hideReview();
+        });
+
+        // Add event listeners for review tabs
+        document.querySelectorAll('.review-tabs .tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.review-tabs .tab-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                this.updateReviewList();
+            });
+        });
     }
 
     showUserManagement() {
@@ -441,6 +460,81 @@ class MathMemoryGame {
     hideStats() {
         document.getElementById('statsScreen').style.display = 'none';
         document.getElementById('gameSetup').style.display = 'block';
+    }
+
+    showReview() {
+        document.getElementById('gameSetup').style.display = 'none';
+        document.getElementById('reviewScreen').style.display = 'block';
+        document.getElementById('currentReviewUserName').textContent = this.users.get(this.currentUser);
+        this.updateReviewList();
+    }
+
+    hideReview() {
+        document.getElementById('reviewScreen').style.display = 'none';
+        document.getElementById('gameSetup').style.display = 'block';
+    }
+
+    updateReviewList() {
+        const reviewContainer = document.querySelector('.review-container');
+        reviewContainer.innerHTML = '';
+
+        // Get the current operation from the active tab
+        const activeTab = document.querySelector('.review-tabs .tab-button.active');
+        const operation = activeTab.dataset.operation;
+
+        // Get all exercises for the current operation
+        const exercises = Array.from(this.exerciseTimes[operation].entries())
+            .filter(([_, times]) => times.length > 0) // Only include exercises with recorded times
+            .map(([key, times]) => {
+                // Parse key like '5addition3' to extract num1, operation, num2
+                const match = key.match(/^(\d+)([a-z]+)(\d+)$/);
+                let num1, num2;
+                if (match) {
+                    num1 = Number(match[1]);
+                    num2 = Number(match[3]);
+                } else {
+                    num1 = num2 = NaN;
+                }
+                const avgTime = times.reduce((a, b) => a + b, 0) / times.length / 1000; // Convert to seconds
+                return { num1, num2, avgTime, key };
+            })
+            .sort((a, b) => b.avgTime - a.avgTime); // Sort by average time (slowest first)
+
+        if (exercises.length === 0) {
+            reviewContainer.innerHTML = '<p>אין תרגילים עם נתונים</p>';
+            return;
+        }
+
+        const exerciseList = document.createElement('div');
+        exerciseList.className = 'exercise-list';
+
+        exercises.forEach(({ num1, num2, avgTime }) => {
+            const exerciseItem = document.createElement('div');
+            exerciseItem.className = 'exercise-item';
+            
+            let operationSymbol;
+            switch (operation) {
+                case 'addition': operationSymbol = '+'; break;
+                case 'subtraction': operationSymbol = '-'; break;
+                case 'multiplication': operationSymbol = '×'; break;
+                case 'division': operationSymbol = '÷'; break;
+            }
+
+            const result = this.calculateResult(num1, num2, operation);
+            exerciseItem.textContent = `${num1} ${operationSymbol} ${num2} = ${result} (${avgTime.toFixed(1)}s)`;
+            exerciseList.appendChild(exerciseItem);
+        });
+
+        reviewContainer.appendChild(exerciseList);
+    }
+
+    calculateResult(num1, num2, operation) {
+        switch (operation) {
+            case 'addition': return num1 + num2;
+            case 'subtraction': return num1 - num2;
+            case 'multiplication': return num1 * num2;
+            case 'division': return num1 / num2;
+        }
     }
 
     generateExercises() {

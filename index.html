@@ -33,6 +33,7 @@
             <button id="startGame" class="start-button">התחל משחק</button>
             <a href="#" id="viewStats" class="stats-link">צפה בסטטיסטיקות</a>
             <a href="#" id="showTutorial" class="tutorial-link">הוראות משחק</a>
+            <a href="#" id="showReview" class="review-link">צפה בתרגילים</a>
         </div>
 
         <div class="game-screen" id="gameScreen" style="display: none;">
@@ -124,6 +125,21 @@
                 </div>
             </div>
             <a href="#" id="backToGameFromUsers" class="back-link">חזרה למשחק</a>
+        </div>
+
+        <div class="review-screen" id="reviewScreen" style="display: none;">
+            <h2>סקירת תרגילים</h2>
+            <div id="currentReviewUserName" class="current-user"></div>
+            <div class="review-tabs">
+                <button class="tab-button active" data-operation="addition">חיבור</button>
+                <button class="tab-button" data-operation="subtraction">חיסור</button>
+                <button class="tab-button" data-operation="multiplication">כפל</button>
+                <button class="tab-button" data-operation="division">חילוק</button>
+            </div>
+            <div class="review-container">
+                <!-- Exercise list will be added here -->
+            </div>
+            <a href="#" id="backFromReview" class="back-link">חזרה למשחק</a>
         </div>
     </div>
     <script src="game.js"></script>
