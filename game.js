@@ -658,6 +658,7 @@ class MathMemoryGame {
     }
 
     startGame() {
+        this.currentCharacter = Math.floor(Math.random() * this.characterImages.length);
         this.generateExercises();
         this.currentExercise = 0;
         this.isPaused = false;
@@ -812,16 +813,53 @@ class MathMemoryGame {
         if (this.totalTimerInterval) {
             clearInterval(this.totalTimerInterval);
         }
-        
-        // Show completion message with total time
-        alert(`כל הכבוד! השלמת את כל התרגילים!\nסה"כ זמן: ${this.totalTime.toFixed(1)} שניות`);
-        
-        // Reset game
+
+        // Hide game screen, show end screen
         document.getElementById('gameScreen').style.display = 'none';
-        document.getElementById('gameSetup').style.display = 'block';
-        
-        // Select a random character for next game
-        this.currentCharacter = Math.floor(Math.random() * this.characterImages.length);
+        const endScreen = document.getElementById('endScreen');
+        endScreen.style.display = 'block';
+
+        // Show character image
+        const endCharacterContainer = document.getElementById('endCharacterContainer');
+        endCharacterContainer.innerHTML = `<img src="${this.characterImages[this.currentCharacter]}" alt="Disney Character">`;
+
+        // Show total time
+        document.getElementById('endTotalTime').textContent = `סה\"כ זמן: ${this.totalTime.toFixed(1)} שניות`;
+
+        // Find 5 slowest exercises from this session
+        const slowestExercisesDiv = document.getElementById('slowestExercises');
+        // Collect all times for current session
+        const sessionExercises = this.exercises.map((ex, idx) => {
+            const time = this.exerciseTimes[ex.operation].get(`${ex.num1}${ex.operation}${ex.num2}`);
+            // Get the last time for this exercise (current session)
+            return {
+                ...ex,
+                time: time ? time[time.length - 1] : 0,
+                idx
+            };
+        });
+        // Sort by time descending, take 5
+        const slowest = sessionExercises.sort((a, b) => b.time - a.time).slice(0, 5);
+        slowestExercisesDiv.innerHTML = '';
+        slowest.forEach(({ num1, num2, operation, time }) => {
+            let opSymbol = '+';
+            if (operation === 'subtraction') opSymbol = '-';
+            else if (operation === 'multiplication') opSymbol = '×';
+            else if (operation === 'division') opSymbol = '/';
+            const result = this.calculateResult(num1, num2, operation);
+            const div = document.createElement('div');
+            div.className = 'exercise-item';
+            div.textContent = `${num1} ${opSymbol} ${num2} = ${result} (${(time/1000).toFixed(1)}s)`;
+            slowestExercisesDiv.appendChild(div);
+        });
+
+        // Back to setup button
+        document.getElementById('backToSetupButton').onclick = () => {
+            endScreen.style.display = 'none';
+            document.getElementById('gameSetup').style.display = 'block';
+            // Select a random character for next game
+            this.currentCharacter = Math.floor(Math.random() * this.characterImages.length);
+        };
     }
 }
 
