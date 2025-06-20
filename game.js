@@ -30,6 +30,7 @@ class MathMemoryGame {
         this.users = new Map();
         this.successAudio = new Audio('audio/success.mp3');
         this.successAudio.volume = 0.5; // Optional: set volume lower if needed
+        this.multipleChoiceMode = false;
 
         this.loadImages().then(() => {
             this.loadUsers();
@@ -258,6 +259,13 @@ class MathMemoryGame {
 
         // Initialize stats table
         this.updateStatsTable();
+
+        // Set multiple choice mode checkbox
+        const mcCheckbox = document.getElementById('multipleChoiceMode');
+        mcCheckbox.checked = this.multipleChoiceMode;
+        mcCheckbox.addEventListener('change', (e) => {
+            this.multipleChoiceMode = e.target.checked;
+        });
     }
 
     setupEventListeners() {
@@ -381,6 +389,7 @@ class MathMemoryGame {
                 this.currentExercise < 20 && 
                 !this.isPaused && 
                 document.getElementById('gameScreen').style.display === 'block') {
+                if (this.multipleChoiceMode) return; // Prevent spacebar in multiple choice mode
                 e.preventDefault();
                 this.handleAnswer();
             }
@@ -683,6 +692,9 @@ class MathMemoryGame {
         document.getElementById('gameScreen').style.display = 'block';
         
         this.startTotalTimer();
+        // Read multiple choice mode from checkbox
+        const mcCheckbox = document.getElementById('multipleChoiceMode');
+        this.multipleChoiceMode = mcCheckbox && mcCheckbox.checked;
         this.showNextExercise();
     }
 
@@ -691,7 +703,6 @@ class MathMemoryGame {
             this.endGame();
             return;
         }
-
         const exercise = this.exercises[this.currentExercise];
         const operationSymbols = {
             addition: '+',
@@ -699,17 +710,68 @@ class MathMemoryGame {
             multiplication: '×',
             division: '/'
         };
-        
         document.getElementById('exercise').textContent = 
             `${exercise.num1} ${operationSymbols[exercise.operation]} ${exercise.num2} = ?`;
-        
         document.getElementById('progressText').textContent = 
             `${this.currentExercise + 1}/20`;
         document.querySelector('.progress-bar').style.width = 
             `${((this.currentExercise + 1) / 20) * 100}%`;
-        
         this.startTime = Date.now();
         this.startTimer();
+
+        // Multiple choice logic
+        const mcContainer = document.getElementById('multipleChoiceContainer');
+        const nextBtn = document.getElementById('nextButton');
+        if (this.multipleChoiceMode) {
+            // Hide next button
+            nextBtn.style.display = 'none';
+            // Generate 4 choices (1 correct, 3 wrong)
+            const correct = this.calculateResult(exercise.num1, exercise.num2, exercise.operation);
+            let choices = [correct];
+            // Generate 3 unique wrong answers
+            const used = new Set([correct]);
+            while (choices.length < 4) {
+                let wrong;
+                // For division, avoid decimals and negatives
+                if (exercise.operation === 'division') {
+                    wrong = correct + (Math.floor(Math.random() * 7) - 3);
+                    if (wrong === correct || wrong <= 0 || wrong > 20) continue;
+                    if (exercise.num1 % wrong !== 0) continue;
+                } else {
+                    wrong = correct + (Math.floor(Math.random() * 11) - 5);
+                    if (wrong === correct || wrong < 0 || wrong > 400) continue;
+                }
+                if (!used.has(wrong)) {
+                    choices.push(wrong);
+                    used.add(wrong);
+                }
+            }
+            // Shuffle choices
+            for (let i = choices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [choices[i], choices[j]] = [choices[j], choices[i]];
+            }
+            // Render buttons
+            mcContainer.innerHTML = '';
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.textContent = choice;
+                btn.onclick = () => {
+                    if (choice === correct) {
+                        this.handleAnswer();
+                    } else {
+                        btn.classList.add('choice-btn-wrong');
+                        btn.disabled = true;
+                    }
+                };
+                mcContainer.appendChild(btn);
+            });
+        } else {
+            // Not multiple choice: hide container, show next button
+            mcContainer.innerHTML = '';
+            nextBtn.style.display = '';
+        }
     }
 
     startTimer() {

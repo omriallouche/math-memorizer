@@ -31,6 +31,11 @@
                 </div>
             </div>
             <button id="startGame" class="start-button">התחל משחק</button>
+            <div style="margin: 1rem 0; text-align: center;">
+                <label style="font-size: 1.1rem; cursor: pointer;">
+                    <input type="checkbox" id="multipleChoiceMode" style="margin-left: 0.5em;"> מצב בחירה מרובה (4 אפשרויות)
+                </label>
+            </div>
             <a href="#" id="viewStats" class="stats-link">צפה בסטטיסטיקות</a>
             <a href="#" id="showTutorial" class="tutorial-link">הוראות משחק</a>
             <a href="#" id="showReview" class="review-link">צפה בתרגילים</a>
@@ -39,6 +44,7 @@
         <div class="game-screen" id="gameScreen" style="display: none;">
             <div class="exercise-display">
                 <div id="exercise" class="exercise"></div>
+                <div id="multipleChoiceContainer" class="multiple-choice-container" style="margin-bottom: 1.5rem;"></div>
                 <div class="timer-container">
                     <div id="timer" class="timer"></div>
                     <button id="pauseButton" class="pause-button" title="השהה">
