@@ -28,6 +28,8 @@ class MathMemoryGame {
         this.pauseStartTime = 0;
         this.currentUser = null;
         this.users = new Map();
+        this.successAudio = new Audio('audio/success.mp3');
+        this.successAudio.volume = 0.5; // Optional: set volume lower if needed
 
         this.loadImages().then(() => {
             this.loadUsers();
@@ -757,6 +759,12 @@ class MathMemoryGame {
     }
 
     handleAnswer() {
+        // Play success sound
+        if (this.successAudio) {
+            // Rewind to start if already playing
+            this.successAudio.currentTime = 0;
+            this.successAudio.play();
+        }
         const timeTaken = Date.now() - this.startTime;
         clearInterval(this.timerInterval);
         
