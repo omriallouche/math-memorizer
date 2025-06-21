@@ -1,109 +1,57 @@
 // Game Configuration Class - handles different game types
 class GameConfig {
     constructor() {
-        this.gameType = 'math'; // 'math', 'language', etc.
+        this.gameType = 'math'; // 'math', 'language', 'gifted'
         this.config = null;
         this.selectedCategories = new Set();
-        this.loadConfig();
+        // Config is now loaded asynchronously in MathMemoryGame.initGame()
     }
 
-    async loadConfig() {
-        // For now, load default math config
-        // Later this will load from YAML files
-        this.config = {
-            type: 'math',
-            name: 'משחק זיכרון מתמטי',
-            description: 'תרגול פעולות חשבון',
-            operations: {
-                addition: { symbol: '+', name: 'חיבור', enabled: true },
-                subtraction: { symbol: '-', name: 'חיסור', enabled: true },
-                multiplication: { symbol: '×', name: 'כפל', enabled: false },
-                division: { symbol: '/', name: 'חילוק', enabled: false }
-            },
-            numberRange: { min: 1, max: 20 },
-            exerciseCount: 20,
-            multipleChoice: {
-                enabled: false,
-                choiceCount: 4,
-                constraints: {
-                    nonNegative: true,
-                    maxValue: 400
-                }
-            },
-            scoring: {
-                trackTime: true,
-                trackAccuracy: true
-            }
-        };
+    async loadYamlConfig(filePath) {
+        try {
+            const response = await fetch(filePath);
+            const yamlText = await response.text();
+            return jsyaml.load(yamlText);
+        } catch (error) {
+            console.error('Error loading or parsing YAML file:', error);
+            return null;
+        }
     }
 
-    async loadLanguageConfig() {
-        // Load language game configuration
-        this.config = {
-            type: 'language',
-            name: 'משחק שפה',
-            description: 'תרגול אנגלית',
-            categories: {
-                animals: { name: 'חיות', enabled: true },
-                colors: { name: 'צבעים', enabled: true },
-                numbers: { name: 'מספרים', enabled: true },
-                family: { name: 'משפחה', enabled: true },
-                food: { name: 'אוכל', enabled: true }
-            },
-            exerciseCount: 15,
-            multipleChoice: {
-                enabled: true,
-                choiceCount: 4
-            },
-            scoring: {
-                trackTime: true,
-                trackAccuracy: true
-            },
-            content: [
-                // Animals
-                { hebrew: 'כלב', english: 'dog', category: 'animals' },
-                { hebrew: 'חתול', english: 'cat', category: 'animals' },
-                { hebrew: 'סוס', english: 'horse', category: 'animals' },
-                { hebrew: 'פרה', english: 'cow', category: 'animals' },
-                { hebrew: 'ציפור', english: 'bird', category: 'animals' },
-                
-                // Colors
-                { hebrew: 'אדום', english: 'red', category: 'colors' },
-                { hebrew: 'כחול', english: 'blue', category: 'colors' },
-                { hebrew: 'ירוק', english: 'green', category: 'colors' },
-                { hebrew: 'צהוב', english: 'yellow', category: 'colors' },
-                { hebrew: 'שחור', english: 'black', category: 'colors' },
-                
-                // Numbers
-                { hebrew: 'אחד', english: 'one', category: 'numbers' },
-                { hebrew: 'שתיים', english: 'two', category: 'numbers' },
-                { hebrew: 'שלוש', english: 'three', category: 'numbers' },
-                { hebrew: 'ארבע', english: 'four', category: 'numbers' },
-                { hebrew: 'חמש', english: 'five', category: 'numbers' },
-                
-                // Family
-                { hebrew: 'אבא', english: 'father', category: 'family' },
-                { hebrew: 'אמא', english: 'mother', category: 'family' },
-                { hebrew: 'אח', english: 'brother', category: 'family' },
-                { hebrew: 'אחות', english: 'sister', category: 'family' },
-                { hebrew: 'סבא', english: 'grandfather', category: 'family' },
-                
-                // Food
-                { hebrew: 'לחם', english: 'bread', category: 'food' },
-                { hebrew: 'חלב', english: 'milk', category: 'food' },
-                { hebrew: 'תפוח', english: 'apple', category: 'food' },
-                { hebrew: 'בננה', english: 'banana', category: 'food' },
-                { hebrew: 'עוגה', english: 'cake', category: 'food' }
-            ]
-        };
-    }
-
-    setGameType(type) {
+    async setGameType(type) {
         this.gameType = type;
-        if (type === 'language') {
-            this.loadLanguageConfig();
+        const configMap = {
+            'math': { path: 'configs/math.yaml', key: 'math_game' },
+            'language': { path: 'configs/language.yaml', key: 'language_game' },
+            'gifted': { path: 'configs/gifted_youth_math.yaml', key: 'gifted_youth_game' }
+        };
+
+        const configInfo = configMap[type];
+
+        if (configInfo) {
+            const { path, key } = configInfo;
+            try {
+                const loadedConfig = await this.loadYamlConfig(path);
+                if (loadedConfig && loadedConfig[key]) {
+                    this.config = loadedConfig[key];
+                    this.config.type = type; // Ensure type is set
+                    // For language and gifted, the number of exercises is determined by the content list
+                    if (this.config.content && (type === 'language' || type === 'gifted')) {
+                        this.config.exerciseCount = this.config.content.length;
+                    }
+                } else {
+                    console.error(`Failed to load or parse config for type: ${type} from ${path}`);
+                    this.config = {}; // Set a default empty config on failure
+                }
+            } catch (error) {
+                console.error(`Error during config loading for type ${type}:`, error);
+                this.config = {};
+            }
         } else {
-            this.loadConfig(); // Default to math
+            console.warn(`Unknown game type: "${type}". Defaulting to math.`);
+            if (this.gameType !== 'math') { // prevent infinite recursion
+                await this.setGameType('math');
+            }
         }
     }
 
@@ -140,6 +88,8 @@ class GameConfig {
             return this.generateMathExercise(selectedNumbers, enabledOperations);
         } else if (this.config.type === 'language') {
             return this.generateLanguageExercise();
+        } else if (this.config.type === 'gifted') {
+            return this.generateGiftedExercise();
         }
         return null;
     }
@@ -206,11 +156,40 @@ class GameConfig {
         };
     }
 
+    generateGiftedExercise() {
+        const availableContent = this.config.content.filter(
+            item => this.selectedCategories.size === 0 || this.selectedCategories.has(item.category)
+        );
+
+        if (availableContent.length === 0) {
+            return null; // Or handle case with no available exercises
+        }
+
+        const randomItem = availableContent[Math.floor(Math.random() * availableContent.length)];
+        
+        return {
+            type: 'gifted',
+            question: randomItem.question,
+            correctAnswer: randomItem.answer,
+            choices: randomItem.choices,
+            data: randomItem
+        };
+    }
+
     generateChoices(correctAnswer, exerciseData) {
         if (this.config.type === 'math') {
             return this.generateMathChoices(correctAnswer, exerciseData);
         } else if (this.config.type === 'language') {
             return this.generateLanguageChoices(correctAnswer, exerciseData);
+        } else if (this.config.type === 'gifted') {
+            // For gifted, choices are pre-defined in the exercise data
+            const choices = [...exerciseData.choices, correctAnswer];
+            // Shuffle
+            for (let i = choices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [choices[i], choices[j]] = [choices[j], choices[i]];
+            }
+            return choices;
         }
         return [];
     }
@@ -339,11 +318,15 @@ class MathMemoryGame {
         this.successAudio.volume = 0.5; // Optional: set volume lower if needed
         this.multipleChoiceMode = false;
 
-        this.loadImages().then(() => {
-            this.loadUsers();
-            this.initializeUI();
-            this.setupEventListeners();
-        });
+        this.initGame();
+    }
+
+    async initGame() {
+        await this.gameConfig.setGameType('math');
+        await this.loadImages();
+        this.loadUsers();
+        this.initializeUI();
+        this.setupEventListeners();
     }
 
     async loadImages() {
@@ -473,11 +456,15 @@ class MathMemoryGame {
         const savedUsers = localStorage.getItem('mathGameUsers');
         if (savedUsers) {
             this.users = new Map(JSON.parse(savedUsers));
+        }
+
+        if (this.users.size === 0) {
+            // Add a default user if none exist
+            this.addUser('אורח'); // "Guest" in Hebrew
+        } else {
             // Select the first user if one exists
             const firstUser = this.users.keys().next().value;
-            if (firstUser) {
-                this.selectUser(firstUser);
-            }
+            this.selectUser(firstUser);
         }
     }
 
@@ -574,10 +561,20 @@ class MathMemoryGame {
     }
 
     selectUser(userId) {
+        if (!userId) {
+            this.currentUser = null;
+            this.updateUserSelect();
+            // Maybe clear settings or use defaults
+            this.operations = { addition: true, subtraction: true, multiplication: false, division: false };
+            this.selectedNumbers = new Set();
+            return;
+        }
+
         this.currentUser = userId;
         this.loadUserSettings(userId);
         this.loadUserStats();
-        this.initializeUI();
+        this.updateUserSelect();
+        // Maybe other UI updates are needed here when a user is switched
     }
 
     updateUserList() {
@@ -611,22 +608,55 @@ class MathMemoryGame {
     }
 
     initializeUI() {
-        // Update user selection
-        this.updateUserList();
         this.updateUserSelect();
-
-        // Set up game type selection
         this.setupGameTypeSelection();
+        this.setupCategorySelection();
+        this.setupNumberSelection();
 
-        // Create number checkboxes
+        const multipleChoiceCheckbox = document.getElementById('multipleChoiceMode');
+        multipleChoiceCheckbox.checked = this.multipleChoiceMode;
+        multipleChoiceCheckbox.addEventListener('change', (e) => {
+            this.multipleChoiceMode = e.target.checked;
+        });
+    }
+
+    setupGameTypeSelection() {
+        const buttons = document.querySelectorAll('.game-type-btn');
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                const type = button.dataset.type;
+                this.selectGameType(type);
+
+                buttons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+            });
+        });
+    }
+
+    setupGrid() {
+        const gridOverlay = document.getElementById('gridOverlay');
+        gridOverlay.innerHTML = '';
+        this.gridCells = [];
+        for (let i = 0; i < this.gameConfig.config.exerciseCount; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            gridOverlay.appendChild(cell);
+            this.gridCells.push(cell);
+        }
+    }
+
+    setupNumberSelection() {
         const numberGrid = document.querySelector('.number-grid');
         numberGrid.innerHTML = '';
+        const selectedNumbers = this.selectedNumbers || new Set();
+
         for (let i = 1; i <= 20; i++) {
             const label = document.createElement('label');
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.value = i;
-            checkbox.checked = this.selectedNumbers.has(i);
+            checkbox.checked = selectedNumbers.has(i);
+            
             checkbox.addEventListener('change', (e) => {
                 const num = parseInt(e.target.value);
                 if (e.target.checked) {
@@ -636,111 +666,82 @@ class MathMemoryGame {
                 }
                 this.saveUserSettings();
             });
+
             label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(i));
+            label.appendChild(document.createTextNode(` ${i}`));
             numberGrid.appendChild(label);
         }
-
-        // Set operation checkboxes
-        Object.keys(this.operations).forEach(operation => {
-            const checkbox = document.getElementById(operation);
-            checkbox.checked = this.operations[operation];
-            checkbox.addEventListener('change', (e) => {
-                this.operations[operation] = e.target.checked;
-                this.saveUserSettings();
-            });
-        });
-
-        // Set up category checkboxes for language games
-        this.setupCategorySelection();
-
-        // Create grid overlay
-        const gridOverlay = document.getElementById('gridOverlay');
-        gridOverlay.innerHTML = '';
-        this.gridCells = []; // Clear the grid cells array
-        for (let i = 0; i < 20; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'grid-cell';
-            gridOverlay.appendChild(cell);
-            this.gridCells.push(cell);
-        }
-
-        // Initialize stats table
-        this.updateStatsTable();
-
-        // Set multiple choice mode checkbox
-        const mcCheckbox = document.getElementById('multipleChoiceMode');
-        mcCheckbox.checked = this.multipleChoiceMode;
-        mcCheckbox.addEventListener('change', (e) => {
-            this.multipleChoiceMode = e.target.checked;
-        });
     }
 
-    setupGameTypeSelection() {
-        const mathBtn = document.getElementById('mathGameBtn');
-        const languageBtn = document.getElementById('languageGameBtn');
-        
-        mathBtn.addEventListener('click', () => {
-            this.selectGameType('math');
-        });
-        
-        languageBtn.addEventListener('click', () => {
-            this.selectGameType('language');
-        });
-    }
-
-    selectGameType(type) {
-        // Update button states
-        document.getElementById('mathGameBtn').classList.toggle('active', type === 'math');
-        document.getElementById('languageGameBtn').classList.toggle('active', type === 'language');
-        
-        // Update game config
-        this.gameConfig.setGameType(type);
-        
-        // Update UI based on game type
-        this.updateUIForGameType(type);
-        
-        // Update page title
+    async selectGameType(type) {
+        this.isGameActive = false;
+        await this.gameConfig.setGameType(type);
         document.querySelector('h1').textContent = this.gameConfig.config.name;
-
-        // Set initial category for language game
-        if (type === 'language') {
-            this.currentCategory = this.gameConfig.getEnabledCategories()[0];
-        }
+        this.updateUIForGameType(type);
+        this.updateUserList(); // Also re-initiate user
+        this.setupCategorySelection();
     }
 
     updateUIForGameType(type) {
         const operationSelection = document.getElementById('operationSelection');
-        const categorySelection = document.getElementById('categorySelection');
         const numberSelection = document.getElementById('numberSelection');
-        
-        if (type === 'language') {
-            operationSelection.style.display = 'none';
-            categorySelection.style.display = 'block';
-            numberSelection.style.display = 'none';
-        } else {
+        const categorySelection = document.getElementById('categorySelection');
+        const multipleChoiceToggle = document.getElementById('multipleChoiceMode').parentElement;
+
+        if (type === 'math') {
             operationSelection.style.display = 'block';
-            categorySelection.style.display = 'none';
             numberSelection.style.display = 'block';
+            categorySelection.style.display = 'none';
+            multipleChoiceToggle.style.display = 'block';
+        } else if (type === 'language') {
+            operationSelection.style.display = 'none';
+            numberSelection.style.display = 'none';
+            categorySelection.style.display = 'block';
+            multipleChoiceToggle.style.display = 'none';
+            this.gameConfig.config.multipleChoice.enabled = true; // Always MC for language
+        } else if (type === 'gifted') {
+            operationSelection.style.display = 'none';
+            numberSelection.style.display = 'none';
+            categorySelection.style.display = 'block';
+            multipleChoiceToggle.style.display = 'none';
+            this.gameConfig.config.multipleChoice.enabled = true; // Always MC for gifted
         }
     }
 
     setupCategorySelection() {
-        const categories = ['animals', 'colors', 'numbers', 'family', 'food'];
-        
-        categories.forEach(category => {
-            const checkbox = document.getElementById(category);
-            if (checkbox) {
-                checkbox.checked = this.gameConfig.selectedCategories.has(category);
+        const categorySelection = document.getElementById('categorySelection');
+        if (!categorySelection) return;
+
+        const categoryGrid = categorySelection.querySelector('.category-grid');
+        if (!categoryGrid) return;
+
+        categoryGrid.innerHTML = ''; // Clear existing categories
+
+        if (this.gameConfig.config.categories) {
+            const categories = this.gameConfig.config.categories;
+            for (const categoryKey in categories) {
+                const category = categories[categoryKey];
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.dataset.category = categoryKey;
+                checkbox.checked = true; // Default to checked
+                
+                this.gameConfig.selectedCategories.add(categoryKey);
+
                 checkbox.addEventListener('change', (e) => {
                     if (e.target.checked) {
-                        this.gameConfig.selectedCategories.add(category);
+                        this.gameConfig.selectedCategories.add(categoryKey);
                     } else {
-                        this.gameConfig.selectedCategories.delete(category);
+                        this.gameConfig.selectedCategories.delete(categoryKey);
                     }
                 });
+
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(` ${category.name}`));
+                categoryGrid.appendChild(label);
             }
-        });
+        }
     }
 
     setupEventListeners() {
@@ -1094,8 +1095,8 @@ class MathMemoryGame {
                     this.exercises.push(exercise);
                 }
             }
-        } else if (this.gameConfig.config.type === 'language') {
-            // Generate language exercises
+        } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted') {
+            // Generate language or gifted exercises
             for (let i = 0; i < this.gameConfig.config.exerciseCount; i++) {
                 const exercise = this.gameConfig.generateExercise();
                 if (exercise) {
@@ -1106,14 +1107,23 @@ class MathMemoryGame {
     }
 
     startGame() {
+        this.setupGrid();
         this.currentCharacter = Math.floor(Math.random() * this.characterImages.length);
         this.generateExercises();
+
+        if (this.exercises.length === 0) {
+            alert('No exercises were loaded. Please check the category selection or game configuration.');
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('gameSetup').style.display = 'block';
+            return;
+        }
+        
         this.currentExercise = 0;
         this.isPaused = false;
         this.gridCells.forEach(cell => cell.style.opacity = '1');
         
         // Generate random reveal order
-        this.revealOrder = Array.from({length: 20}, (_, i) => i);
+        this.revealOrder = Array.from({length: this.gameConfig.config.exerciseCount}, (_, i) => i);
         for (let i = this.revealOrder.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [this.revealOrder[i], this.revealOrder[j]] = [this.revealOrder[j], this.revealOrder[i]];
