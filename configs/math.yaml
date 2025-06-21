@@ -24,7 +24,7 @@ math_game:
     max: 20
   exerciseCount: 20
   multipleChoice:
-    enabled: false
+    enabled: true
     choiceCount: 4
     constraints:
       nonNegative: true

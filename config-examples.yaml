@@ -51,7 +51,7 @@ language_game:
     numbers:
       name: "מספרים"
       enabled: false
-  exerciseCount: 15
+  exerciseCount: 20
   multipleChoice:
     enabled: true
     choiceCount: 4
@@ -87,7 +87,7 @@ memory_game:
     symbols:
       name: "סמלים"
       enabled: false
-  exerciseCount: 10
+  exerciseCount: 20
   multipleChoice:
     enabled: false
   scoring:

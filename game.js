@@ -37,7 +37,8 @@ class GameConfig {
                     this.config.type = type; // Ensure type is set
                     // For language and gifted, the number of exercises is determined by the content list
                     if (this.config.content && (type === 'language' || type === 'gifted')) {
-                        this.config.exerciseCount = this.config.content.length;
+                        // this.config.exerciseCount = this.config.content.length;
+                        this.config.exerciseCount = 20;
                     }
                 } else {
                     console.error(`Failed to load or parse config for type: ${type} from ${path}`);
@@ -687,24 +688,28 @@ class MathMemoryGame {
         const numberSelection = document.getElementById('numberSelection');
         const categorySelection = document.getElementById('categorySelection');
         const multipleChoiceToggle = document.getElementById('multipleChoiceMode').parentElement;
+        const multipleChoiceCheckbox = document.getElementById('multipleChoiceMode');
 
         if (type === 'math') {
             operationSelection.style.display = 'block';
             numberSelection.style.display = 'block';
             categorySelection.style.display = 'none';
             multipleChoiceToggle.style.display = 'block';
+            multipleChoiceCheckbox.disabled = false;
         } else if (type === 'language') {
             operationSelection.style.display = 'none';
             numberSelection.style.display = 'none';
             categorySelection.style.display = 'block';
-            multipleChoiceToggle.style.display = 'none';
-            this.gameConfig.config.multipleChoice.enabled = true; // Always MC for language
+            multipleChoiceToggle.style.display = 'block';
+            multipleChoiceCheckbox.checked = true;
+            multipleChoiceCheckbox.disabled = true;
         } else if (type === 'gifted') {
             operationSelection.style.display = 'none';
             numberSelection.style.display = 'none';
             categorySelection.style.display = 'block';
-            multipleChoiceToggle.style.display = 'none';
-            this.gameConfig.config.multipleChoice.enabled = true; // Always MC for gifted
+            multipleChoiceToggle.style.display = 'block';
+            multipleChoiceCheckbox.checked = true;
+            multipleChoiceCheckbox.disabled = true;
         }
     }
 
