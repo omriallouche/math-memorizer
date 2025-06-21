@@ -1,5 +1,147 @@
+// Game Configuration Class - handles different game types
+class GameConfig {
+    constructor() {
+        this.gameType = 'math'; // 'math', 'language', etc.
+        this.config = null;
+        this.loadConfig();
+    }
+
+    async loadConfig() {
+        // For now, load default math config
+        // Later this will load from YAML files
+        this.config = {
+            type: 'math',
+            name: 'משחק זיכרון מתמטי',
+            description: 'תרגול פעולות חשבון',
+            operations: {
+                addition: { symbol: '+', name: 'חיבור', enabled: true },
+                subtraction: { symbol: '-', name: 'חיסור', enabled: true },
+                multiplication: { symbol: '×', name: 'כפל', enabled: false },
+                division: { symbol: '/', name: 'חילוק', enabled: false }
+            },
+            numberRange: { min: 1, max: 20 },
+            exerciseCount: 20,
+            multipleChoice: {
+                enabled: false,
+                choiceCount: 4,
+                constraints: {
+                    nonNegative: true,
+                    maxValue: 400
+                }
+            },
+            scoring: {
+                trackTime: true,
+                trackAccuracy: true
+            }
+        };
+    }
+
+    getOperationSymbol(operation) {
+        return this.config.operations[operation]?.symbol || operation;
+    }
+
+    getOperationName(operation) {
+        return this.config.operations[operation]?.name || operation;
+    }
+
+    isOperationEnabled(operation) {
+        return this.config.operations[operation]?.enabled || false;
+    }
+
+    getEnabledOperations() {
+        return Object.keys(this.config.operations).filter(op => this.isOperationEnabled(op));
+    }
+
+    generateExercise(selectedNumbers, enabledOperations) {
+        if (this.config.type === 'math') {
+            return this.generateMathExercise(selectedNumbers, enabledOperations);
+        }
+        // Future: other game types
+        return null;
+    }
+
+    generateMathExercise(selectedNumbers, enabledOperations) {
+        const numbers = Array.from(selectedNumbers);
+        const num1 = numbers[Math.floor(Math.random() * numbers.length)];
+        const num2 = numbers[Math.floor(Math.random() * numbers.length)];
+        const operation = enabledOperations[Math.floor(Math.random() * enabledOperations.length)];
+        
+        let result;
+        switch (operation) {
+            case 'addition':
+                result = num1 + num2;
+                break;
+            case 'subtraction':
+                if (num1 < num2) return this.generateMathExercise(selectedNumbers, enabledOperations);
+                result = num1 - num2;
+                break;
+            case 'multiplication':
+                result = num1 * num2;
+                break;
+            case 'division':
+                if (num2 === 0) return this.generateMathExercise(selectedNumbers, enabledOperations);
+                result = num1 / num2;
+                if (result > 20 || !Number.isInteger(result)) {
+                    return this.generateMathExercise(selectedNumbers, enabledOperations);
+                }
+                break;
+        }
+        
+        return {
+            type: 'math',
+            question: `${num1} ${this.getOperationSymbol(operation)} ${num2} = ?`,
+            correctAnswer: result,
+            data: { num1, num2, operation }
+        };
+    }
+
+    generateChoices(correctAnswer, exerciseData) {
+        if (this.config.type === 'math') {
+            return this.generateMathChoices(correctAnswer, exerciseData);
+        }
+        return [];
+    }
+
+    generateMathChoices(correctAnswer, exerciseData) {
+        const choices = [correctAnswer];
+        const used = new Set([correctAnswer]);
+        const constraints = this.config.multipleChoice.constraints;
+        
+        while (choices.length < this.config.multipleChoice.choiceCount) {
+            let wrong;
+            if (exerciseData.operation === 'division') {
+                wrong = correctAnswer + (Math.floor(Math.random() * 7) - 3);
+                if (wrong === correctAnswer || wrong <= 0 || wrong > 20) continue;
+                if (exerciseData.num1 % wrong !== 0) continue;
+            } else {
+                wrong = correctAnswer + (Math.floor(Math.random() * 11) - 5);
+                if (wrong === correctAnswer || 
+                    (constraints.nonNegative && wrong < 0) || 
+                    wrong > constraints.maxValue) continue;
+            }
+            if (!used.has(wrong)) {
+                choices.push(wrong);
+                used.add(wrong);
+            }
+        }
+        
+        // Shuffle choices
+        for (let i = choices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [choices[i], choices[j]] = [choices[j], choices[i]];
+        }
+        
+        return choices;
+    }
+
+    checkAnswer(userAnswer, correctAnswer) {
+        return userAnswer === correctAnswer;
+    }
+}
+
 class MathMemoryGame {
     constructor() {
+        this.gameConfig = new GameConfig();
         this.exercises = [];
         this.currentExercise = 0;
         this.startTime = 0;
@@ -531,21 +673,14 @@ class MathMemoryGame {
                 case 'division': operationSymbol = '÷'; break;
             }
 
-            const result = this.calculateResult(num1, num2, operation);
+            // Calculate result using game config
+            const exercise = this.gameConfig.generateMathExercise([num1], [operation]);
+            const result = exercise ? exercise.correctAnswer : '?';
             exerciseItem.textContent = `${num1} ${operationSymbol} ${num2} = ${result} (${avgTime.toFixed(1)}s)`;
             exerciseList.appendChild(exerciseItem);
         });
 
         reviewContainer.appendChild(exerciseList);
-    }
-
-    calculateResult(num1, num2, operation) {
-        switch (operation) {
-            case 'addition': return num1 + num2;
-            case 'subtraction': return num1 - num2;
-            case 'multiplication': return num1 * num2;
-            case 'division': return num1 / num2;
-        }
     }
 
     generateExercises() {
@@ -555,116 +690,12 @@ class MathMemoryGame {
             .filter(([_, active]) => active)
             .map(([op]) => op);
         
-        // Calculate median times for each exercise type
-        const medianTimes = {};
-        Object.keys(this.exerciseTimes).forEach(operation => {
-            medianTimes[operation] = new Map();
-            this.exerciseTimes[operation].forEach((times, key) => {
-                if (times.length > 0) {
-                    const sortedTimes = [...times].sort((a, b) => a - b);
-                    medianTimes[operation].set(key, sortedTimes[Math.floor(sortedTimes.length / 2)]);
-                }
-            });
-        });
-
-        // Create exercise pool with weights based on median times
-        const exercisePool = [];
-        numbers.forEach(num1 => {
-            numbers.forEach(num2 => {
-                activeOperations.forEach(operation => {
-                    let isValid = true;
-                    let result;
-
-                    switch (operation) {
-                        case 'addition':
-                            result = num1 + num2;
-                            break;
-                        case 'subtraction':
-                            // For subtraction, we want to match num2 and result
-                            if (num1 < num2) return;
-                            result = num1 - num2;
-                            break;
-                        case 'multiplication':
-                            result = num1 * num2;
-                            break;
-                        case 'division':
-                            // For division, num1 is the desired result (quotient)
-                            // and num2 is the denominator
-                            // Both should be ≤ 20
-                            if (num2 === 0) return;
-                            if (num1 > 20) return; // Result should be ≤ 20
-                            result = num1;
-                            break;
-                    }
-
-                    // Calculate weight based on median time
-                    const key = `${num1}${operation}${num2}`;
-                    const medianTime = medianTimes[operation].get(key) || 0;
-                    const weight = Math.max(1, Math.ceil(medianTime / 1000)); // Convert to seconds and ensure minimum weight of 1
-
-                    // Add exercise to pool multiple times based on weight
-                    for (let i = 0; i < weight; i++) {
-                        exercisePool.push({ num1, num2, operation, result });
-                    }
-                });
-            });
-        });
-
-        // Select 20 exercises from the pool
-        while (this.exercises.length < 20 && exercisePool.length > 0) {
-            const randomIndex = Math.floor(Math.random() * exercisePool.length);
-            const exercise = exercisePool[randomIndex];
-            
-            // For subtraction and division, ensure we're using the correct numbers
-            if (exercise.operation === 'subtraction') {
-                this.exercises.push({
-                    num1: exercise.num2 + exercise.result,
-                    num2: exercise.num2,
-                    operation: exercise.operation
-                });
-            } else if (exercise.operation === 'division') {
-                // For division, num2 is the denominator and result is the quotient
-                // We calculate the numerator as denominator * quotient
-                const numerator = exercise.num2 * exercise.result;
-                this.exercises.push({
-                    num1: numerator,
-                    num2: exercise.num2,
-                    operation: exercise.operation
-                });
-            } else {
-                this.exercises.push({
-                    num1: exercise.num1,
-                    num2: exercise.num2,
-                    operation: exercise.operation
-                });
+        // Generate exercises using the game config
+        for (let i = 0; i < this.gameConfig.config.exerciseCount; i++) {
+            const exercise = this.gameConfig.generateExercise(this.selectedNumbers, activeOperations);
+            if (exercise) {
+                this.exercises.push(exercise);
             }
-            
-            // Remove the selected exercise from the pool
-            exercisePool.splice(randomIndex, 1);
-        }
-
-        // If we don't have enough exercises, fill with random ones
-        while (this.exercises.length < 20) {
-            const num1 = numbers[Math.floor(Math.random() * numbers.length)];
-            const num2 = numbers[Math.floor(Math.random() * numbers.length)];
-            const operation = activeOperations[Math.floor(Math.random() * activeOperations.length)];
-            
-            if (operation === 'subtraction' && num1 < num2) continue;
-            if (operation === 'division') {
-                if (num2 === 0) continue;
-                // For division, ensure we have a valid whole number result
-                const result = num1;
-                if (result > 20) continue; // Result should be ≤ 20
-                const numerator = num2 * result;
-                this.exercises.push({
-                    num1: numerator,
-                    num2: num2,
-                    operation: operation
-                });
-                continue;
-            }
-            
-            this.exercises.push({ num1, num2, operation });
         }
     }
 
@@ -699,58 +730,34 @@ class MathMemoryGame {
     }
 
     showNextExercise() {
-        if (this.currentExercise >= 20) {
+        if (this.currentExercise >= this.gameConfig.config.exerciseCount) {
             this.endGame();
             return;
         }
+        
         const exercise = this.exercises[this.currentExercise];
-        const operationSymbols = {
-            addition: '+',
-            subtraction: '-',
-            multiplication: '×',
-            division: '/'
-        };
-        document.getElementById('exercise').textContent = 
-            `${exercise.num1} ${operationSymbols[exercise.operation]} ${exercise.num2} = ?`;
+        
+        // Display the question
+        document.getElementById('exercise').textContent = exercise.question;
         document.getElementById('progressText').textContent = 
-            `${this.currentExercise + 1}/20`;
+            `${this.currentExercise + 1}/${this.gameConfig.config.exerciseCount}`;
         document.querySelector('.progress-bar').style.width = 
-            `${((this.currentExercise + 1) / 20) * 100}%`;
+            `${((this.currentExercise + 1) / this.gameConfig.config.exerciseCount) * 100}%`;
+        
         this.startTime = Date.now();
         this.startTimer();
 
         // Multiple choice logic
         const mcContainer = document.getElementById('multipleChoiceContainer');
         const nextBtn = document.getElementById('nextButton');
+        
         if (this.multipleChoiceMode) {
             // Hide next button
             nextBtn.style.display = 'none';
-            // Generate 4 choices (1 correct, 3 wrong)
-            const correct = this.calculateResult(exercise.num1, exercise.num2, exercise.operation);
-            let choices = [correct];
-            // Generate 3 unique wrong answers
-            const used = new Set([correct]);
-            while (choices.length < 4) {
-                let wrong;
-                // For division, avoid decimals and negatives
-                if (exercise.operation === 'division') {
-                    wrong = correct + (Math.floor(Math.random() * 7) - 3);
-                    if (wrong === correct || wrong <= 0 || wrong > 20) continue;
-                    if (exercise.num1 % wrong !== 0) continue;
-                } else {
-                    wrong = correct + (Math.floor(Math.random() * 11) - 5);
-                    if (wrong === correct || wrong < 0 || wrong > 400) continue;
-                }
-                if (!used.has(wrong)) {
-                    choices.push(wrong);
-                    used.add(wrong);
-                }
-            }
-            // Shuffle choices
-            for (let i = choices.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [choices[i], choices[j]] = [choices[j], choices[i]];
-            }
+            
+            // Generate choices using game config
+            const choices = this.gameConfig.generateChoices(exercise.correctAnswer, exercise.data);
+            
             // Render buttons
             mcContainer.innerHTML = '';
             choices.forEach(choice => {
@@ -758,7 +765,7 @@ class MathMemoryGame {
                 btn.className = 'choice-btn';
                 btn.textContent = choice;
                 btn.onclick = () => {
-                    if (choice === correct) {
+                    if (this.gameConfig.checkAnswer(choice, exercise.correctAnswer)) {
                         this.handleAnswer();
                     } else {
                         btn.classList.add('choice-btn-wrong');
@@ -831,13 +838,17 @@ class MathMemoryGame {
         clearInterval(this.timerInterval);
         
         const exercise = this.exercises[this.currentExercise];
-        const exerciseKey = `${exercise.num1}${exercise.operation}${exercise.num2}`;
         
-        if (!this.exerciseTimes[exercise.operation].has(exerciseKey)) {
-            this.exerciseTimes[exercise.operation].set(exerciseKey, []);
+        // For math exercises, track times by operation
+        if (exercise.type === 'math') {
+            const exerciseKey = `${exercise.data.num1}${exercise.data.operation}${exercise.data.num2}`;
+            
+            if (!this.exerciseTimes[exercise.data.operation].has(exerciseKey)) {
+                this.exerciseTimes[exercise.data.operation].set(exerciseKey, []);
+            }
+            this.exerciseTimes[exercise.data.operation].get(exerciseKey).push(timeTaken);
+            this.saveUserStats();
         }
-        this.exerciseTimes[exercise.operation].get(exerciseKey).push(timeTaken);
-        this.saveUserStats();
 
         // Reveal next grid cell in random order
         this.gridCells[this.revealOrder[this.currentExercise]].style.opacity = '0';
@@ -896,30 +907,26 @@ class MathMemoryGame {
         // Show total time
         document.getElementById('endTotalTime').textContent = `סה\"כ זמן: ${this.totalTime.toFixed(1)} שניות`;
 
-        // Find 5 slowest exercises from this session
+        // Find 5 slowest exercises from this session (for math exercises)
         const slowestExercisesDiv = document.getElementById('slowestExercises');
-        // Collect all times for current session
-        const sessionExercises = this.exercises.map((ex, idx) => {
-            const time = this.exerciseTimes[ex.operation].get(`${ex.num1}${ex.operation}${ex.num2}`);
-            // Get the last time for this exercise (current session)
-            return {
-                ...ex,
-                time: time ? time[time.length - 1] : 0,
-                idx
-            };
-        });
+        const sessionExercises = this.exercises
+            .filter(ex => ex.type === 'math')
+            .map((ex, idx) => {
+                const time = this.exerciseTimes[ex.data.operation].get(`${ex.data.num1}${ex.data.operation}${ex.data.num2}`);
+                return {
+                    ...ex,
+                    time: time ? time[time.length - 1] : 0,
+                    idx
+                };
+            });
+        
         // Sort by time descending, take 5
         const slowest = sessionExercises.sort((a, b) => b.time - a.time).slice(0, 5);
         slowestExercisesDiv.innerHTML = '';
-        slowest.forEach(({ num1, num2, operation, time }) => {
-            let opSymbol = '+';
-            if (operation === 'subtraction') opSymbol = '-';
-            else if (operation === 'multiplication') opSymbol = '×';
-            else if (operation === 'division') opSymbol = '/';
-            const result = this.calculateResult(num1, num2, operation);
+        slowest.forEach((exercise) => {
             const div = document.createElement('div');
             div.className = 'exercise-item';
-            div.textContent = `${num1} ${opSymbol} ${num2} = ${result} (${(time/1000).toFixed(1)}s)`;
+            div.textContent = `${exercise.question} (${(exercise.time/1000).toFixed(1)}s)`;
             slowestExercisesDiv.appendChild(div);
         });
 

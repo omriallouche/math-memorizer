@@ -1,0 +1,102 @@
+# Example YAML configuration files for different game types
+
+# Math Game Configuration
+math_game:
+  type: "math"
+  name: "משחק זיכרון מתמטי"
+  description: "תרגול פעולות חשבון"
+  operations:
+    addition:
+      symbol: "+"
+      name: "חיבור"
+      enabled: true
+    subtraction:
+      symbol: "-"
+      name: "חיסור"
+      enabled: true
+    multiplication:
+      symbol: "×"
+      name: "כפל"
+      enabled: false
+    division:
+      symbol: "/"
+      name: "חילוק"
+      enabled: false
+  numberRange:
+    min: 1
+    max: 20
+  exerciseCount: 20
+  multipleChoice:
+    enabled: false
+    choiceCount: 4
+    constraints:
+      nonNegative: true
+      maxValue: 400
+  scoring:
+    trackTime: true
+    trackAccuracy: true
+
+# Language Game Configuration (Future)
+language_game:
+  type: "language"
+  name: "משחק שפה"
+  description: "תרגול אנגלית"
+  categories:
+    animals:
+      name: "חיות"
+      enabled: true
+    colors:
+      name: "צבעים"
+      enabled: true
+    numbers:
+      name: "מספרים"
+      enabled: false
+  exerciseCount: 15
+  multipleChoice:
+    enabled: true
+    choiceCount: 4
+  scoring:
+    trackTime: true
+    trackAccuracy: true
+  content:
+    - hebrew: "כלב"
+      english: "dog"
+      category: "animals"
+      audio: "audio/animals/dog.mp3"
+      image: "images/animals/dog.jpg"
+    - hebrew: "חתול"
+      english: "cat"
+      category: "animals"
+      audio: "audio/animals/cat.mp3"
+      image: "images/animals/cat.jpg"
+    - hebrew: "אדום"
+      english: "red"
+      category: "colors"
+      audio: "audio/colors/red.mp3"
+      image: "images/colors/red.jpg"
+
+# Memory Game Configuration (Future)
+memory_game:
+  type: "memory"
+  name: "משחק זיכרון"
+  description: "תרגול זיכרון חזותי"
+  categories:
+    shapes:
+      name: "צורות"
+      enabled: true
+    symbols:
+      name: "סמלים"
+      enabled: false
+  exerciseCount: 10
+  multipleChoice:
+    enabled: false
+  scoring:
+    trackTime: true
+    trackAccuracy: true
+  content:
+    - question: "images/shapes/circle.jpg"
+      answer: "עיגול"
+      category: "shapes"
+    - question: "images/shapes/square.jpg"
+      answer: "ריבוע"
+      category: "shapes" 
