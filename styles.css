@@ -561,6 +561,7 @@ label {
     cursor: pointer;
     margin: 0.5rem;
     transition: background 0.2s, transform 0.1s;
+    text-transform: uppercase;
 }
 .choice-btn:hover {
     background: #45b7af;
