@@ -3,6 +3,7 @@ class GameConfig {
     constructor() {
         this.gameType = 'math'; // 'math', 'language', etc.
         this.config = null;
+        this.selectedCategories = new Set();
         this.loadConfig();
     }
 
@@ -36,6 +37,76 @@ class GameConfig {
         };
     }
 
+    async loadLanguageConfig() {
+        // Load language game configuration
+        this.config = {
+            type: 'language',
+            name: 'משחק שפה',
+            description: 'תרגול אנגלית',
+            categories: {
+                animals: { name: 'חיות', enabled: true },
+                colors: { name: 'צבעים', enabled: true },
+                numbers: { name: 'מספרים', enabled: true },
+                family: { name: 'משפחה', enabled: true },
+                food: { name: 'אוכל', enabled: true }
+            },
+            exerciseCount: 15,
+            multipleChoice: {
+                enabled: true,
+                choiceCount: 4
+            },
+            scoring: {
+                trackTime: true,
+                trackAccuracy: true
+            },
+            content: [
+                // Animals
+                { hebrew: 'כלב', english: 'dog', category: 'animals' },
+                { hebrew: 'חתול', english: 'cat', category: 'animals' },
+                { hebrew: 'סוס', english: 'horse', category: 'animals' },
+                { hebrew: 'פרה', english: 'cow', category: 'animals' },
+                { hebrew: 'ציפור', english: 'bird', category: 'animals' },
+                
+                // Colors
+                { hebrew: 'אדום', english: 'red', category: 'colors' },
+                { hebrew: 'כחול', english: 'blue', category: 'colors' },
+                { hebrew: 'ירוק', english: 'green', category: 'colors' },
+                { hebrew: 'צהוב', english: 'yellow', category: 'colors' },
+                { hebrew: 'שחור', english: 'black', category: 'colors' },
+                
+                // Numbers
+                { hebrew: 'אחד', english: 'one', category: 'numbers' },
+                { hebrew: 'שתיים', english: 'two', category: 'numbers' },
+                { hebrew: 'שלוש', english: 'three', category: 'numbers' },
+                { hebrew: 'ארבע', english: 'four', category: 'numbers' },
+                { hebrew: 'חמש', english: 'five', category: 'numbers' },
+                
+                // Family
+                { hebrew: 'אבא', english: 'father', category: 'family' },
+                { hebrew: 'אמא', english: 'mother', category: 'family' },
+                { hebrew: 'אח', english: 'brother', category: 'family' },
+                { hebrew: 'אחות', english: 'sister', category: 'family' },
+                { hebrew: 'סבא', english: 'grandfather', category: 'family' },
+                
+                // Food
+                { hebrew: 'לחם', english: 'bread', category: 'food' },
+                { hebrew: 'חלב', english: 'milk', category: 'food' },
+                { hebrew: 'תפוח', english: 'apple', category: 'food' },
+                { hebrew: 'בננה', english: 'banana', category: 'food' },
+                { hebrew: 'עוגה', english: 'cake', category: 'food' }
+            ]
+        };
+    }
+
+    setGameType(type) {
+        this.gameType = type;
+        if (type === 'language') {
+            this.loadLanguageConfig();
+        } else {
+            this.loadConfig(); // Default to math
+        }
+    }
+
     getOperationSymbol(operation) {
         return this.config.operations[operation]?.symbol || operation;
     }
@@ -52,11 +123,24 @@ class GameConfig {
         return Object.keys(this.config.operations).filter(op => this.isOperationEnabled(op));
     }
 
+    getCategoryName(category) {
+        return this.config.categories[category]?.name || category;
+    }
+
+    isCategoryEnabled(category) {
+        return this.config.categories[category]?.enabled || false;
+    }
+
+    getEnabledCategories() {
+        return Object.keys(this.config.categories).filter(cat => this.isCategoryEnabled(cat));
+    }
+
     generateExercise(selectedNumbers, enabledOperations) {
         if (this.config.type === 'math') {
             return this.generateMathExercise(selectedNumbers, enabledOperations);
+        } else if (this.config.type === 'language') {
+            return this.generateLanguageExercise();
         }
-        // Future: other game types
         return null;
     }
 
@@ -95,9 +179,38 @@ class GameConfig {
         };
     }
 
+    generateLanguageExercise() {
+        // Filter content by selected categories
+        const availableContent = this.config.content.filter(
+            item => this.selectedCategories.has(item.category)
+        );
+        
+        if (availableContent.length === 0) {
+            // If no categories selected, use all content
+            const randomItem = this.config.content[Math.floor(Math.random() * this.config.content.length)];
+            return {
+                type: 'language',
+                question: randomItem.hebrew,
+                correctAnswer: randomItem.english,
+                data: randomItem
+            };
+        }
+        
+        const randomItem = availableContent[Math.floor(Math.random() * availableContent.length)];
+        
+        return {
+            type: 'language',
+            question: randomItem.hebrew,
+            correctAnswer: randomItem.english,
+            data: randomItem
+        };
+    }
+
     generateChoices(correctAnswer, exerciseData) {
         if (this.config.type === 'math') {
             return this.generateMathChoices(correctAnswer, exerciseData);
+        } else if (this.config.type === 'language') {
+            return this.generateLanguageChoices(correctAnswer, exerciseData);
         }
         return [];
     }
@@ -122,6 +235,57 @@ class GameConfig {
             if (!used.has(wrong)) {
                 choices.push(wrong);
                 used.add(wrong);
+            }
+        }
+        
+        // Shuffle choices
+        for (let i = choices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [choices[i], choices[j]] = [choices[j], choices[i]];
+        }
+        
+        return choices;
+    }
+
+    generateLanguageChoices(correctAnswer, exerciseData) {
+        const choices = [correctAnswer];
+        const used = new Set([correctAnswer]);
+        
+        // Get all other English words from the same category
+        const sameCategoryWords = this.config.content
+            .filter(item => item.category === exerciseData.category && item.english !== correctAnswer)
+            .map(item => item.english);
+        
+        // Get some words from other categories
+        const otherCategoryWords = this.config.content
+            .filter(item => item.category !== exerciseData.category)
+            .map(item => item.english);
+        
+        // Add words from same category first
+        for (const word of sameCategoryWords) {
+            if (choices.length >= this.config.multipleChoice.choiceCount) break;
+            if (!used.has(word)) {
+                choices.push(word);
+                used.add(word);
+            }
+        }
+        
+        // Fill remaining slots with words from other categories
+        for (const word of otherCategoryWords) {
+            if (choices.length >= this.config.multipleChoice.choiceCount) break;
+            if (!used.has(word)) {
+                choices.push(word);
+                used.add(word);
+            }
+        }
+        
+        // If we still don't have enough choices, add some random English words
+        const commonWords = ['the', 'and', 'is', 'are', 'was', 'were', 'have', 'has', 'do', 'does', 'can', 'will', 'would', 'could', 'should'];
+        for (const word of commonWords) {
+            if (choices.length >= this.config.multipleChoice.choiceCount) break;
+            if (!used.has(word)) {
+                choices.push(word);
+                used.add(word);
             }
         }
         
@@ -164,6 +328,7 @@ class MathMemoryGame {
         this.revealOrder = [];
         this.timerInterval = null;
         this.currentOperation = 'addition';
+        this.currentCategory = null;
         this.isPaused = false;
         this.totalTime = 0;
         this.totalTimerInterval = null;
@@ -262,6 +427,10 @@ class MathMemoryGame {
         if (savedTimes) {
             const timesData = JSON.parse(savedTimes);
             Object.keys(timesData).forEach(operation => {
+                // Ensure the map for the operation/category exists
+                if (!this.exerciseTimes[operation]) {
+                    this.exerciseTimes[operation] = new Map();
+                }
                 timesData[operation].forEach(([key, times]) => {
                     this.exerciseTimes[operation].set(key, times);
                 });
@@ -355,6 +524,9 @@ class MathMemoryGame {
         this.updateUserList();
         this.updateUserSelect();
 
+        // Set up game type selection
+        this.setupGameTypeSelection();
+
         // Create number checkboxes
         const numberGrid = document.querySelector('.number-grid');
         numberGrid.innerHTML = '';
@@ -388,6 +560,9 @@ class MathMemoryGame {
             });
         });
 
+        // Set up category checkboxes for language games
+        this.setupCategorySelection();
+
         // Create grid overlay
         const gridOverlay = document.getElementById('gridOverlay');
         gridOverlay.innerHTML = '';
@@ -407,6 +582,73 @@ class MathMemoryGame {
         mcCheckbox.checked = this.multipleChoiceMode;
         mcCheckbox.addEventListener('change', (e) => {
             this.multipleChoiceMode = e.target.checked;
+        });
+    }
+
+    setupGameTypeSelection() {
+        const mathBtn = document.getElementById('mathGameBtn');
+        const languageBtn = document.getElementById('languageGameBtn');
+        
+        mathBtn.addEventListener('click', () => {
+            this.selectGameType('math');
+        });
+        
+        languageBtn.addEventListener('click', () => {
+            this.selectGameType('language');
+        });
+    }
+
+    selectGameType(type) {
+        // Update button states
+        document.getElementById('mathGameBtn').classList.toggle('active', type === 'math');
+        document.getElementById('languageGameBtn').classList.toggle('active', type === 'language');
+        
+        // Update game config
+        this.gameConfig.setGameType(type);
+        
+        // Update UI based on game type
+        this.updateUIForGameType(type);
+        
+        // Update page title
+        document.querySelector('h1').textContent = this.gameConfig.config.name;
+
+        // Set initial category for language game
+        if (type === 'language') {
+            this.currentCategory = this.gameConfig.getEnabledCategories()[0];
+        }
+    }
+
+    updateUIForGameType(type) {
+        const operationSelection = document.getElementById('operationSelection');
+        const categorySelection = document.getElementById('categorySelection');
+        const numberSelection = document.getElementById('numberSelection');
+        
+        if (type === 'language') {
+            operationSelection.style.display = 'none';
+            categorySelection.style.display = 'block';
+            numberSelection.style.display = 'none';
+        } else {
+            operationSelection.style.display = 'block';
+            categorySelection.style.display = 'none';
+            numberSelection.style.display = 'block';
+        }
+    }
+
+    setupCategorySelection() {
+        const categories = ['animals', 'colors', 'numbers', 'family', 'food'];
+        
+        categories.forEach(category => {
+            const checkbox = document.getElementById(category);
+            if (checkbox) {
+                checkbox.checked = this.gameConfig.selectedCategories.has(category);
+                checkbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        this.gameConfig.selectedCategories.add(category);
+                    } else {
+                        this.gameConfig.selectedCategories.delete(category);
+                    }
+                });
+            }
         });
     }
 
@@ -468,13 +710,22 @@ class MathMemoryGame {
 
         // Start game button
         document.getElementById('startGame').addEventListener('click', () => {
-            if (this.selectedNumbers.size === 0) {
-                alert('אנא בחר לפחות מספר אחד!');
-                return;
-            }
-            if (!Object.values(this.operations).some(v => v)) {
-                alert('אנא בחר לפחות פעולה אחת!');
-                return;
+            if (this.gameConfig.config.type === 'math') {
+                // Math game validation
+                if (this.selectedNumbers.size === 0) {
+                    alert('אנא בחר לפחות מספר אחד!');
+                    return;
+                }
+                if (!Object.values(this.operations).some(v => v)) {
+                    alert('אנא בחר לפחות פעולה אחת!');
+                    return;
+                }
+            } else if (this.gameConfig.config.type === 'language') {
+                // Language game validation
+                if (this.gameConfig.selectedCategories.size === 0) {
+                    alert('אנא בחר לפחות קטגוריה אחת!');
+                    return;
+                }
             }
             this.startGame();
         });
@@ -522,11 +773,6 @@ class MathMemoryGame {
 
         // Spacebar listener
         document.addEventListener('keydown', (e) => {
-            console.log('Key pressed:', e.code);
-            console.log('Game screen visible:', document.getElementById('gameScreen').style.display === 'block');
-            console.log('Current exercise:', this.currentExercise);
-            console.log('Is paused:', this.isPaused);
-            
             if (e.code === 'Space' && 
                 this.currentExercise < 20 && 
                 !this.isPaused && 
@@ -607,7 +853,66 @@ class MathMemoryGame {
             currentUserName.textContent = '';
         }
         
+        // Update stats tabs based on game type
+        this.updateStatsTabs();
+        
         this.updateStatsTable();
+    }
+
+    updateStatsTabs() {
+        const statsTabs = document.getElementById('statsTabs');
+        const statsDescription = document.getElementById('statsDescription');
+        
+        statsTabs.innerHTML = '';
+        
+        if (this.gameConfig.config.type === 'math') {
+            // Math game tabs
+            const operations = ['addition', 'subtraction', 'multiplication', 'division'];
+            operations.forEach((operation, index) => {
+                const button = document.createElement('button');
+                button.className = `tab-button ${index === 0 ? 'active' : ''}`;
+                button.dataset.operation = operation;
+                button.textContent = this.gameConfig.getOperationName(operation);
+                button.addEventListener('click', (e) => {
+                    this.currentOperation = e.target.dataset.operation;
+                    document.querySelectorAll('.tab-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+                    this.updateStatsTable();
+                });
+                statsTabs.appendChild(button);
+            });
+            
+            statsDescription.textContent = 'זמנים ממוצעים בשניות לכל שילוב:';
+        } else if (this.gameConfig.config.type === 'language') {
+            // Language game tabs
+            const categories = this.gameConfig.getEnabledCategories();
+            categories.forEach((category, index) => {
+                const button = document.createElement('button');
+                button.className = `tab-button ${index === 0 ? 'active' : ''}`;
+                button.dataset.category = category;
+                button.textContent = this.gameConfig.getCategoryName(category);
+                button.addEventListener('click', (e) => {
+                    this.currentCategory = e.target.dataset.category;
+                    document.querySelectorAll('.tab-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+                    this.updateStatsTable();
+                });
+                statsTabs.appendChild(button);
+            });
+            
+            statsDescription.textContent = 'זמנים ממוצעים בשניות לכל מילה:';
+        }
+        
+        // Set initial current operation/category
+        if (this.gameConfig.config.type === 'math') {
+            this.currentOperation = 'addition';
+        } else if (this.gameConfig.config.type === 'language') {
+            this.currentCategory = this.gameConfig.getEnabledCategories()[0];
+        }
     }
 
     hideStats() {
@@ -685,16 +990,26 @@ class MathMemoryGame {
 
     generateExercises() {
         this.exercises = [];
-        const numbers = Array.from(this.selectedNumbers);
-        const activeOperations = Object.entries(this.operations)
-            .filter(([_, active]) => active)
-            .map(([op]) => op);
         
-        // Generate exercises using the game config
-        for (let i = 0; i < this.gameConfig.config.exerciseCount; i++) {
-            const exercise = this.gameConfig.generateExercise(this.selectedNumbers, activeOperations);
-            if (exercise) {
-                this.exercises.push(exercise);
+        if (this.gameConfig.config.type === 'math') {
+            const activeOperations = Object.entries(this.operations)
+                .filter(([_, active]) => active)
+                .map(([op]) => op);
+            
+            // Generate exercises using the game config
+            for (let i = 0; i < this.gameConfig.config.exerciseCount; i++) {
+                const exercise = this.gameConfig.generateExercise(this.selectedNumbers, activeOperations);
+                if (exercise) {
+                    this.exercises.push(exercise);
+                }
+            }
+        } else if (this.gameConfig.config.type === 'language') {
+            // Generate language exercises
+            for (let i = 0; i < this.gameConfig.config.exerciseCount; i++) {
+                const exercise = this.gameConfig.generateExercise();
+                if (exercise) {
+                    this.exercises.push(exercise);
+                }
             }
         }
     }
@@ -848,6 +1163,18 @@ class MathMemoryGame {
             }
             this.exerciseTimes[exercise.data.operation].get(exerciseKey).push(timeTaken);
             this.saveUserStats();
+        } else if (exercise.type === 'language') {
+            // For language exercises, track times by category
+            const category = exercise.data.category;
+            if (!this.exerciseTimes[category]) {
+                this.exerciseTimes[category] = new Map();
+            }
+            const exerciseKey = `${exercise.data.hebrew}-${exercise.data.english}`;
+            if (!this.exerciseTimes[category].has(exerciseKey)) {
+                this.exerciseTimes[category].set(exerciseKey, []);
+            }
+            this.exerciseTimes[category].get(exerciseKey).push(timeTaken);
+            this.saveUserStats();
         }
 
         // Reveal next grid cell in random order
@@ -859,6 +1186,16 @@ class MathMemoryGame {
 
     updateStatsTable() {
         const statsContainer = document.querySelector('.stats-container');
+        statsContainer.innerHTML = '';
+        
+        if (this.gameConfig.config.type === 'math') {
+            this.updateMathStatsTable(statsContainer);
+        } else if (this.gameConfig.config.type === 'language') {
+            this.updateLanguageStatsTable(statsContainer);
+        }
+    }
+
+    updateMathStatsTable(statsContainer) {
         const table = document.createElement('table');
         table.className = 'stats-table';
         
@@ -882,7 +1219,41 @@ class MathMemoryGame {
             table.appendChild(row);
         }
         
-        statsContainer.innerHTML = '';
+        statsContainer.appendChild(table);
+    }
+
+    updateLanguageStatsTable(statsContainer) {
+        const table = document.createElement('table');
+        table.className = 'stats-table';
+        
+        // Create header row
+        const headerRow = document.createElement('tr');
+        headerRow.innerHTML = '<th>מילה בעברית</th><th>תרגום באנגלית</th><th>זמן ממוצע (שניות)</th><th>מספר ניסיונות</th>';
+        table.appendChild(headerRow);
+        
+        // Get all words from the current category
+        const categoryWords = this.gameConfig.config.content.filter(
+            item => item.category === this.currentCategory
+        );
+        
+        // Create data rows
+        categoryWords.forEach(word => {
+            const row = document.createElement('tr');
+            const key = `${word.hebrew}-${word.english}`;
+            const times = this.exerciseTimes[this.currentCategory]?.get(key) || [];
+            const avgTime = times.length ? 
+                (times.reduce((a, b) => a + b, 0) / times.length / 1000).toFixed(1) : 
+                '-';
+            
+            row.innerHTML = `
+                <td>${word.hebrew}</td>
+                <td>${word.english}</td>
+                <td>${avgTime}</td>
+                <td>${times.length}</td>
+            `;
+            table.appendChild(row);
+        });
+        
         statsContainer.appendChild(table);
     }
 
@@ -909,16 +1280,33 @@ class MathMemoryGame {
 
         // Find 5 slowest exercises from this session (for math exercises)
         const slowestExercisesDiv = document.getElementById('slowestExercises');
-        const sessionExercises = this.exercises
-            .filter(ex => ex.type === 'math')
-            .map((ex, idx) => {
-                const time = this.exerciseTimes[ex.data.operation].get(`${ex.data.num1}${ex.data.operation}${ex.data.num2}`);
-                return {
-                    ...ex,
-                    time: time ? time[time.length - 1] : 0,
-                    idx
-                };
-            });
+        let sessionExercises = [];
+        
+        if (this.gameConfig.config.type === 'math') {
+            sessionExercises = this.exercises
+                .filter(ex => ex.type === 'math')
+                .map((ex, idx) => {
+                    const time = this.exerciseTimes[ex.data.operation].get(`${ex.data.num1}${ex.data.operation}${ex.data.num2}`);
+                    return {
+                        ...ex,
+                        time: time ? time[time.length - 1] : 0,
+                        idx
+                    };
+                });
+        } else if (this.gameConfig.config.type === 'language') {
+            sessionExercises = this.exercises
+                .filter(ex => ex.type === 'language')
+                .map((ex, idx) => {
+                    const category = ex.data.category;
+                    const key = `${ex.data.hebrew}-${ex.data.english}`;
+                    const time = this.exerciseTimes[category]?.get(key);
+                    return {
+                        ...ex,
+                        time: time ? time[time.length - 1] : 0,
+                        idx
+                    };
+                });
+        }
         
         // Sort by time descending, take 5
         const slowest = sessionExercises.sort((a, b) => b.time - a.time).slice(0, 5);
@@ -926,7 +1314,13 @@ class MathMemoryGame {
         slowest.forEach((exercise) => {
             const div = document.createElement('div');
             div.className = 'exercise-item';
-            div.textContent = `${exercise.question} (${(exercise.time/1000).toFixed(1)}s)`;
+            
+            if (exercise.type === 'math') {
+                div.textContent = `${exercise.question} (${(exercise.time/1000).toFixed(1)}s)`;
+            } else if (exercise.type === 'language') {
+                div.textContent = `${exercise.data.hebrew} → ${exercise.data.english} (${(exercise.time/1000).toFixed(1)}s)`;
+            }
+            
             slowestExercisesDiv.appendChild(div);
         });
 

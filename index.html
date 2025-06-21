@@ -10,6 +10,19 @@
     <div class="container">
         <div class="game-setup" id="gameSetup">
             <h1>משחק זיכרון מתמטי</h1>
+            <div class="game-type-selection">
+                <h2>בחר סוג משחק:</h2>
+                <div class="game-type-buttons">
+                    <button id="mathGameBtn" class="game-type-btn active" data-type="math">
+                        <span class="game-icon">🔢</span>
+                        <span class="game-name">מתמטיקה</span>
+                    </button>
+                    <button id="languageGameBtn" class="game-type-btn" data-type="language">
+                        <span class="game-icon">🌍</span>
+                        <span class="game-name">שפה</span>
+                    </button>
+                </div>
+            </div>
             <div class="user-selection">
                 <label for="userSelect">בחר משתמש:</label>
                 <select id="userSelect" class="user-select">
@@ -17,14 +30,24 @@
                 </select>
                 <a href="#" id="manageUsers" class="manage-users-link">ניהול משתמשים</a>
             </div>
-            <div class="operation-selection">
+            <div class="operation-selection" id="operationSelection">
                 <h2>בחר פעולות:</h2>
                 <label><input type="checkbox" id="addition" checked> חיבור</label>
                 <label><input type="checkbox" id="subtraction" checked> חיסור</label>
                 <label><input type="checkbox" id="multiplication"> כפל</label>
                 <label><input type="checkbox" id="division"> חילוק</label>
             </div>
-            <div class="number-selection">
+            <div class="category-selection" id="categorySelection" style="display: none;">
+                <h2>בחר קטגוריות:</h2>
+                <div class="category-grid">
+                    <label><input type="checkbox" id="animals" checked> חיות</label>
+                    <label><input type="checkbox" id="colors" checked> צבעים</label>
+                    <label><input type="checkbox" id="numbers" checked> מספרים</label>
+                    <label><input type="checkbox" id="family" checked> משפחה</label>
+                    <label><input type="checkbox" id="food" checked> אוכל</label>
+                </div>
+            </div>
+            <div class="number-selection" id="numberSelection">
                 <h2>בחר מספרים:</h2>
                 <div class="number-grid">
                     <!-- Numbers will be added dynamically -->
@@ -82,13 +105,10 @@
         <div class="stats-screen" id="statsScreen" style="display: none;">
             <h2>סטטיסטיקות תרגול</h2>
             <div id="currentUserName" class="current-user"></div>
-            <div class="stats-tabs">
-                <button class="tab-button active" data-operation="addition">חיבור</button>
-                <button class="tab-button" data-operation="subtraction">חיסור</button>
-                <button class="tab-button" data-operation="multiplication">כפל</button>
-                <button class="tab-button" data-operation="division">חילוק</button>
+            <div class="stats-tabs" id="statsTabs">
+                <!-- Tabs will be populated dynamically based on game type -->
             </div>
-            <p>זמנים ממוצעים בשניות לכל שילוב:</p>
+            <p id="statsDescription">זמנים ממוצעים בשניות לכל שילוב:</p>
             <div class="stats-container">
                 <!-- Stats table will be added here -->
             </div>

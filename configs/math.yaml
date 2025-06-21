@@ -1,0 +1,34 @@
+math_game:
+  type: "math"
+  name: "משחק זיכרון מתמטי"
+  description: "תרגול פעולות חשבון"
+  operations:
+    addition:
+      symbol: "+"
+      name: "חיבור"
+      enabled: true
+    subtraction:
+      symbol: "-"
+      name: "חיסור"
+      enabled: true
+    multiplication:
+      symbol: "×"
+      name: "כפל"
+      enabled: false
+    division:
+      symbol: "/"
+      name: "חילוק"
+      enabled: false
+  numberRange:
+    min: 1
+    max: 20
+  exerciseCount: 20
+  multipleChoice:
+    enabled: false
+    choiceCount: 4
+    constraints:
+      nonNegative: true
+      maxValue: 400
+  scoring:
+    trackTime: true
+    trackAccuracy: true 
