@@ -323,10 +323,28 @@ label {
 @media (max-width: 600px) {
     .container {
         padding: 1rem;
+        overflow-wrap: break-word;
     }
 
     h1 {
         font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.3rem;
+    }
+
+    label {
+        font-size: 1rem;
+    }
+
+    .user-selection {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .stats-link, .tutorial-link, .back-link, .review-link {
+        font-size: 1rem;
     }
 
     .exercise {
@@ -337,6 +355,12 @@ label {
         padding: 0.4rem 0.8rem;
         margin: 0 0.2rem;
         font-size: 0.9rem;
+    }
+
+    .next-button {
+        width: 150px;
+        padding: 0.8rem;
+        font-size: 1.1rem;
     }
 }
 
@@ -470,14 +494,6 @@ label {
 
 .next-button:active {
     transform: scale(0.95);
-}
-
-@media (max-width: 600px) {
-    .next-button {
-        width: 150px;
-        padding: 0.8rem;
-        font-size: 1.1rem;
-    }
 }
 
 .review-link {
