@@ -12,20 +12,12 @@
             <h1>משחק זיכרון מתמטי</h1>
             <div class="game-type-selection">
                 <h2>בחר סוג משחק:</h2>
-                <div class="game-type-buttons">
-                    <button id="mathGameBtn" class="game-type-btn active" data-type="math">
-                        <span class="game-icon">🔢</span>
-                        <span class="game-name">מתמטיקה</span>
-                    </button>
-                    <button id="languageGameBtn" class="game-type-btn" data-type="language">
-                        <span class="game-icon">🌍</span>
-                        <span class="game-name">שפה</span>
-                    </button>
-                    <button id="giftedGameBtn" class="game-type-btn" data-type="gifted">
-                        <span class="game-icon">🧠</span>
-                        <span class="game-name">מחוננים</span>
-                    </button>
-                </div>
+                <select id="gameTypeSelect" class="game-type-select">
+                    <option value="math">מתמטיקה</option>
+                    <option value="language">שפה</option>
+                    <option value="gifted">מחוננים</option>
+                    <option value="english_sounds">צלילי אנגלית</option>
+                </select>
             </div>
             <div class="user-selection">
                 <label for="userSelect">בחר משתמש:</label>

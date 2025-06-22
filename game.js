@@ -23,7 +23,8 @@ class GameConfig {
         const configMap = {
             'math': { path: 'configs/math.yaml', key: 'math_game' },
             'language': { path: 'configs/language.yaml', key: 'language_game' },
-            'gifted': { path: 'configs/gifted_youth_math.yaml', key: 'gifted_youth_game' }
+            'gifted': { path: 'configs/gifted_youth_math.yaml', key: 'gifted_youth_game' },
+            'english_sounds': { path: 'configs/english_sounds.yaml', key: 'english_sounds' }
         };
 
         const configInfo = configMap[type];
@@ -34,9 +35,9 @@ class GameConfig {
                 const loadedConfig = await this.loadYamlConfig(path);
                 if (loadedConfig && loadedConfig[key]) {
                     this.config = loadedConfig[key];
-                    this.config.type = type; // Ensure type is set
+                    this.config.type = type; // Always set to the selected type
                     // For language and gifted, the number of exercises is determined by the content list
-                    if (this.config.content && (type === 'language' || type === 'gifted')) {
+                    if (this.config.content && (type === 'language' || type === 'gifted' || type === 'english_sounds')) {
                         // this.config.exerciseCount = this.config.content.length;
                         this.config.exerciseCount = 20;
                     }
@@ -89,7 +90,7 @@ class GameConfig {
             return this.generateMathExercise(selectedNumbers, enabledOperations);
         } else if (this.config.type === 'language') {
             return this.generateLanguageExercise();
-        } else if (this.config.type === 'gifted') {
+        } else if (this.config.type === 'gifted' || this.config.type === 'english_sounds') {
             return this.generateGiftedExercise();
         }
         return null;
@@ -182,8 +183,8 @@ class GameConfig {
             return this.generateMathChoices(correctAnswer, exerciseData);
         } else if (this.config.type === 'language') {
             return this.generateLanguageChoices(correctAnswer, exerciseData);
-        } else if (this.config.type === 'gifted') {
-            // For gifted, choices are pre-defined in the exercise data
+        } else if (this.config.type === 'gifted' || this.config.type === 'english_sounds') {
+            // For gifted and english_sounds, choices are pre-defined in the exercise data
             const choices = [...exerciseData.choices, correctAnswer];
             // Shuffle
             for (let i = choices.length - 1; i > 0; i--) {
@@ -628,15 +629,26 @@ class MathMemoryGame {
     }
 
     setupGameTypeSelection() {
-        const buttons = document.querySelectorAll('.game-type-btn');
-        buttons.forEach(button => {
-            button.addEventListener('click', () => {
-                const type = button.dataset.type;
-                this.selectGameType(type);
-
-                buttons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-            });
+        const gameTypeSelect = document.getElementById('gameTypeSelect');
+        if (!gameTypeSelect) return;
+        gameTypeSelect.innerHTML = '';
+        const gameTypes = [
+            { value: 'math', label: 'מתמטיקה' },
+            { value: 'language', label: 'שפה' },
+            { value: 'gifted', label: 'מחוננים' },
+            { value: 'english_sounds', label: 'צלילי אנגלית' }
+        ];
+        gameTypes.forEach(game => {
+            const option = document.createElement('option');
+            option.value = game.value;
+            option.textContent = game.label;
+            if (this.gameConfig.gameType === game.value) {
+                option.selected = true;
+            }
+            gameTypeSelect.appendChild(option);
+        });
+        gameTypeSelect.addEventListener('change', (e) => {
+            this.selectGameType(e.target.value);
         });
     }
 
@@ -709,6 +721,7 @@ class MathMemoryGame {
             multipleChoiceToggle.style.display = 'block';
             multipleChoiceCheckbox.checked = true;
             multipleChoiceCheckbox.disabled = true;
+            this.multipleChoiceMode = true;
         } else if (type === 'gifted') {
             operationSelection.style.display = 'none';
             numberSelection.style.display = 'none';
@@ -716,6 +729,14 @@ class MathMemoryGame {
             multipleChoiceToggle.style.display = 'block';
             multipleChoiceCheckbox.checked = true;
             multipleChoiceCheckbox.disabled = true;
+            this.multipleChoiceMode = true;
+        } else if (type === 'english_sounds') {
+            operationSelection.style.display = 'none';
+            numberSelection.style.display = 'none';
+            categorySelection.style.display = 'block';
+            multipleChoiceToggle.style.display = 'block';
+            multipleChoiceCheckbox.disabled = false;
+            // Do not force multipleChoiceMode, let user control
         }
     }
 
@@ -823,8 +844,8 @@ class MathMemoryGame {
                     alert('אנא בחר לפחות פעולה אחת!');
                     return;
                 }
-            } else if (this.gameConfig.config.type === 'language') {
-                // Language game validation
+            } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted' || this.gameConfig.config.type === 'english_sounds') {
+                // Language/gifted/english_sounds game validation
                 if (this.gameConfig.selectedCategories.size === 0) {
                     alert('אנא בחר לפחות קטגוריה אחת!');
                     return;
@@ -1092,21 +1113,17 @@ class MathMemoryGame {
 
     generateExercises() {
         this.exercises = [];
-        
         if (this.gameConfig.config.type === 'math') {
             const activeOperations = Object.entries(this.operations)
                 .filter(([_, active]) => active)
                 .map(([op]) => op);
-            
-            // Generate exercises using the game config
             for (let i = 0; i < this.gameConfig.config.exerciseCount; i++) {
                 const exercise = this.gameConfig.generateExercise(this.selectedNumbers, activeOperations);
                 if (exercise) {
                     this.exercises.push(exercise);
                 }
             }
-        } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted') {
-            // Generate language or gifted exercises
+        } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted' || this.gameConfig.config.type === 'english_sounds') {
             for (let i = 0; i < this.gameConfig.config.exerciseCount; i++) {
                 const exercise = this.gameConfig.generateExercise();
                 if (exercise) {
@@ -1160,9 +1177,13 @@ class MathMemoryGame {
         document.getElementById('gameScreen').style.display = 'block';
         
         this.startTotalTimer();
-        // Read multiple choice mode from checkbox
+        // For gifted, force multiple choice; for english_sounds, let user control
         const mcCheckbox = document.getElementById('multipleChoiceMode');
-        this.multipleChoiceMode = mcCheckbox && mcCheckbox.checked;
+        if (this.gameConfig.config.type === 'gifted') {
+            this.multipleChoiceMode = true;
+        } else {
+            this.multipleChoiceMode = mcCheckbox && mcCheckbox.checked;
+        }
         this.showNextExercise();
 
         document.getElementById('exercise').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1173,30 +1194,30 @@ class MathMemoryGame {
             this.endGame();
             return;
         }
-        
         const exercise = this.exercises[this.currentExercise];
-        
         // Display the question
-        document.getElementById('exercise').textContent = exercise.question;
+        let questionText = exercise.question;
+        // For english_sounds, add a subtitle for clarity
+        if (this.gameConfig.config.type === 'english_sounds') {
+            questionText = `<div style='font-size:2.5rem;'>${exercise.question}</div><div style='font-size:1.2rem;color:#888;'>בחר את המילה באנגלית המתאימה</div>`;
+            document.getElementById('exercise').innerHTML = questionText;
+        } else {
+            document.getElementById('exercise').textContent = questionText;
+        }
         document.getElementById('progressText').textContent = 
             `${this.currentExercise + 1}/${this.gameConfig.config.exerciseCount}`;
         document.querySelector('.progress-bar').style.width = 
             `${((this.currentExercise + 1) / this.gameConfig.config.exerciseCount) * 100}%`;
-        
         this.startTime = Date.now();
         this.startTimer();
-
         // Multiple choice logic
         const mcContainer = document.getElementById('multipleChoiceContainer');
         const nextBtn = document.getElementById('nextButton');
-        
         if (this.multipleChoiceMode) {
             // Hide next button
             nextBtn.style.display = 'none';
-            
             // Generate choices using game config
             const choices = this.gameConfig.generateChoices(exercise.correctAnswer, exercise.data);
-            
             // Render buttons
             mcContainer.innerHTML = '';
             choices.forEach(choice => {
