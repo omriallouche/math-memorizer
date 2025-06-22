@@ -1,5 +1,5 @@
 english_sounds:
-  type: gifted
+  type: multiple_choice
   name: צלילי אנגלית
   description: תרגול זיהוי מילות אנגלית לפי צליל
   showTimer: false

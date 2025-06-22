@@ -1,5 +1,5 @@
  gifted_youth_game:
-  type: "gifted"
+  type: "multiple_choice"
   name: "מחוננים"
   description: "תרגול כמותי למבחן מחוננים"
   showTimer: true

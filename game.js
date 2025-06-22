@@ -1,7 +1,7 @@
 // Game Configuration Class - handles different game types
 class GameConfig {
     constructor() {
-        this.gameType = 'math'; // 'math', 'language', 'gifted'
+        this.gameType = 'math';
         this.config = null;
         this.selectedCategories = new Set();
         // Config is now loaded asynchronously in MathMemoryGame.initGame()
@@ -36,11 +36,7 @@ class GameConfig {
                 if (loadedConfig && loadedConfig[key]) {
                     this.config = loadedConfig[key];
                     this.config.type = type; // Always set to the selected type
-                    // For language and gifted, the number of exercises is determined by the content list
-                    if (this.config.content && (type === 'language' || type === 'gifted' || type === 'english_sounds')) {
-                        // this.config.exerciseCount = this.config.content.length;
-                        this.config.exerciseCount = 20;
-                    }
+                    this.config.exerciseCount = 20;
                 } else {
                     console.error(`Failed to load or parse config for type: ${type} from ${path}`);
                     this.config = {}; // Set a default empty config on failure
@@ -183,7 +179,7 @@ class GameConfig {
             return this.generateMathChoices(correctAnswer, exerciseData);
         } else if (this.config.type === 'language') {
             return this.generateLanguageChoices(correctAnswer, exerciseData);
-        } else if (this.config.type === 'gifted' || this.config.type === 'english_sounds') {
+        } else if (this.config.type === 'multiple_choice') {
             // For gifted and english_sounds, choices are pre-defined in the exercise data
             const choices = [...exerciseData.choices, correctAnswer];
             // Shuffle
@@ -708,33 +704,27 @@ class MathMemoryGame {
         const multipleChoiceToggle = document.getElementById('multipleChoiceMode').parentElement;
         const multipleChoiceCheckbox = document.getElementById('multipleChoiceMode');
 
+        operationSelection.style.display = 'none';
+        numberSelection.style.display = 'none';
+        categorySelection.style.display = 'block';
+        multipleChoiceToggle.style.display = 'block';
+        multipleChoiceCheckbox.checked = false;
+        multipleChoiceCheckbox.disabled = false;
+
         if (type === 'math') {
             operationSelection.style.display = 'block';
             numberSelection.style.display = 'block';
             categorySelection.style.display = 'none';
-            multipleChoiceToggle.style.display = 'block';
             multipleChoiceCheckbox.disabled = false;
         } else if (type === 'language') {
-            operationSelection.style.display = 'none';
-            numberSelection.style.display = 'none';
-            categorySelection.style.display = 'block';
-            multipleChoiceToggle.style.display = 'block';
             multipleChoiceCheckbox.checked = true;
             multipleChoiceCheckbox.disabled = true;
             this.multipleChoiceMode = true;
         } else if (type === 'gifted') {
-            operationSelection.style.display = 'none';
-            numberSelection.style.display = 'none';
-            categorySelection.style.display = 'block';
-            multipleChoiceToggle.style.display = 'block';
             multipleChoiceCheckbox.checked = true;
             multipleChoiceCheckbox.disabled = true;
             this.multipleChoiceMode = true;
         } else if (type === 'english_sounds') {
-            operationSelection.style.display = 'none';
-            numberSelection.style.display = 'none';
-            categorySelection.style.display = 'block';
-            multipleChoiceToggle.style.display = 'block';
             multipleChoiceCheckbox.disabled = false;
             // Do not force multipleChoiceMode, let user control
         }
