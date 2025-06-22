@@ -2,6 +2,7 @@
   type: "gifted"
   name: "מחוננים"
   description: "תרגול כמותי למבחן מחוננים"
+  showTimer: true
   categories:
     Multi_Step_Arithmetic_Word_Problems:
       name: "בעיות  מרובות צעדים"

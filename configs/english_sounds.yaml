@@ -1,0 +1,730 @@
+english_sounds:
+  type: gifted
+  name: צלילי אנגלית
+  description: תרגול זיהוי מילות אנגלית לפי צליל
+  showTimer: false
+  categories:
+    English_Sound_Words:
+      name: צלילי אנגלית
+  multipleChoice:
+    enabled: true
+    choiceCount: 4
+  scoring:
+    trackTime: true
+    trackAccuracy: true
+  exerciseCount: 100
+  content:
+  - question: דוֹג
+    answer: Dog
+    choices:
+    - Ear
+    - Egg
+    - Star
+    category: English_Sound_Words
+  - question: קַט
+    answer: Cat
+    choices:
+    - Gift
+    - Sock
+    - Wall
+    category: English_Sound_Words
+  - question: סַן
+    answer: Sun
+    choices:
+    - Nose
+    - Bird
+    - Sock
+    category: English_Sound_Words
+  - question: מוּן
+    answer: Moon
+    choices:
+    - King
+    - Candy
+    - Apple
+    category: English_Sound_Words
+  - question: סְטָאר
+    answer: Star
+    choices:
+    - Home
+    - Pig
+    - Brother
+    category: English_Sound_Words
+  - question: קָאר
+    answer: Car
+    choices:
+    - Juice
+    - Star
+    - Moon
+    category: English_Sound_Words
+  - question: בַּאס
+    answer: Bus
+    choices:
+    - Park
+    - Mommy
+    - Train
+    category: English_Sound_Words
+  - question: בּוֹל
+    answer: Ball
+    choices:
+    - Road
+    - Juice
+    - Foot
+    category: English_Sound_Words
+  - question: דוֹל
+    answer: Doll
+    choices:
+    - Mouth
+    - Window
+    - Coat
+    category: English_Sound_Words
+  - question: פִישׁ
+    answer: Fish
+    choices:
+    - Sister
+    - Lion
+    - Hand
+    category: English_Sound_Words
+  - question: בֶּרְד
+    answer: Bird
+    choices:
+    - Soup
+    - Table
+    - Snow
+    category: English_Sound_Words
+  - question: קַאוּ
+    answer: Cow
+    choices:
+    - Brother
+    - Sock
+    - Dog
+    category: English_Sound_Words
+  - question: פִּיג
+    answer: Pig
+    choices:
+    - Bike
+    - Lion
+    - Lamp
+    category: English_Sound_Words
+  - question: דַאק
+    answer: Duck
+    choices:
+    - Juice
+    - Grass
+    - Sock
+    category: English_Sound_Words
+  - question: הֶן
+    answer: Hen
+    choices:
+    - Mommy
+    - Brother
+    - Doll
+    category: English_Sound_Words
+  - question: אֶג
+    answer: Egg
+    choices:
+    - Ball
+    - Lion
+    - Window
+    category: English_Sound_Words
+  - question: מִילְק
+    answer: Milk
+    choices:
+    - House
+    - Dog
+    - Boat
+    category: English_Sound_Words
+  - question: בּוּק
+    answer: Book
+    choices:
+    - Car
+    - Rat
+    - Toy
+    category: English_Sound_Words
+  - question: פֶּן
+    answer: Pen
+    choices:
+    - Queen
+    - Plate
+    - Roof
+    category: English_Sound_Words
+  - question: טוֹי
+    answer: Toy
+    choices:
+    - Mother
+    - Cow
+    - Chair
+    category: English_Sound_Words
+  - question: בּוֹקְס
+    answer: Box
+    choices:
+    - Ear
+    - Fish
+    - Glass
+    category: English_Sound_Words
+  - question: בֶּד
+    answer: Bed
+    choices:
+    - Pig
+    - Moon
+    - Lamp
+    category: English_Sound_Words
+  - question: הַט
+    answer: Hat
+    choices:
+    - Park
+    - Water
+    - Egg
+    category: English_Sound_Words
+  - question: קֶפּ
+    answer: Cap
+    choices:
+    - Pear
+    - Soup
+    - Fish
+    category: English_Sound_Words
+  - question: קַאפ
+    answer: Cup
+    choices:
+    - Banana
+    - Duck
+    - Pig
+    category: English_Sound_Words
+  - question: פְּלֵייט
+    answer: Plate
+    choices:
+    - Park
+    - Bunny
+    - Hat
+    category: English_Sound_Words
+  - question: فوֹרְק
+    answer: Fork
+    choices:
+    - Cow
+    - Snow
+    - Bear
+    category: English_Sound_Words
+  - question: סְפּוּן
+    answer: Spoon
+    choices:
+    - Ring
+    - Cap
+    - Lamp
+    category: English_Sound_Words
+  - question: צֶ'אֵר
+    answer: Chair
+    choices:
+    - Fish
+    - Bird
+    - Banana
+    category: English_Sound_Words
+  - question: טֵייבְּל
+    answer: Table
+    choices:
+    - Cat
+    - King
+    - Box
+    category: English_Sound_Words
+  - question: דוֹר
+    answer: Door
+    choices:
+    - Apple
+    - Deer
+    - Park
+    category: English_Sound_Words
+  - question: וִינְדוֹ
+    answer: Window
+    choices:
+    - Bear
+    - Dog
+    - Sun
+    category: English_Sound_Words
+  - question: ווֹל
+    answer: Wall
+    choices:
+    - Cloud
+    - Fish
+    - Chair
+    category: English_Sound_Words
+  - question: רוּף
+    answer: Roof
+    choices:
+    - Doll
+    - Lamp
+    - Lion
+    category: English_Sound_Words
+  - question: בֶּאג
+    answer: Bag
+    choices:
+    - Kite
+    - Snow
+    - Shirt
+    category: English_Sound_Words
+  - question: שׁוּ
+    answer: Shoe
+    choices:
+    - Pig
+    - Moon
+    - Plate
+    category: English_Sound_Words
+  - question: סוֹק
+    answer: Sock
+    choices:
+    - Lion
+    - Park
+    - Ball
+    category: English_Sound_Words
+  - question: קוֹט
+    answer: Coat
+    choices:
+    - Bird
+    - Grass
+    - Cat
+    category: English_Sound_Words
+  - question: שֵׁרְט
+    answer: Shirt
+    choices:
+    - Nose
+    - Banana
+    - Cup
+    category: English_Sound_Words
+  - question: פֶּנְטְס
+    answer: Pants
+    choices:
+    - Bear
+    - Rain
+    - Tree
+    category: English_Sound_Words
+  - question: דְרֶס
+    answer: Dress
+    choices:
+    - Bird
+    - Lion
+    - Door
+    category: English_Sound_Words
+  - question: טְרִי
+    answer: Tree
+    choices:
+    - Cap
+    - Nose
+    - Pig
+    category: English_Sound_Words
+  - question: לִיף
+    answer: Leaf
+    choices:
+    - Ring
+    - Bed
+    - Pond
+    category: English_Sound_Words
+  - question: פְלַאוּאֵר
+    answer: Flower
+    choices:
+    - Juice
+    - Kite
+    - Bear
+    category: English_Sound_Words
+  - question: גְרַאס
+    answer: Grass
+    choices:
+    - Pig
+    - Bell
+    - Cat
+    category: English_Sound_Words
+  - question: אַפְּל
+    answer: Apple
+    choices:
+    - Dog
+    - Queen
+    - Bus
+    category: English_Sound_Words
+  - question: גְרֵייפּ
+    answer: Grape
+    choices:
+    - Moon
+    - Book
+    - Ball
+    category: English_Sound_Words
+  - question: בַּנַאנָה
+    answer: Banana
+    choices:
+    - Rain
+    - Hat
+    - Ball
+    category: English_Sound_Words
+  - question: אוֹרֶנְג'
+    answer: Orange
+    choices:
+    - Bike
+    - Pig
+    - Cloud
+    category: English_Sound_Words
+  - question: פֵּיר
+    answer: Pear
+    choices:
+    - Clock
+    - Bed
+    - Cat
+    category: English_Sound_Words
+  - question: פִּיץ'
+    answer: Peach
+    choices:
+    - Dog
+    - Lion
+    - Ball
+    category: English_Sound_Words
+  - question: רַייס
+    answer: Rice
+    choices:
+    - Juice
+    - Lake
+    - Boat
+    category: English_Sound_Words
+  - question: קֵייק
+    answer: Cake
+    choices:
+    - Cat
+    - Apple
+    - Juice
+    category: English_Sound_Words
+  - question: פַּיי
+    answer: Pie
+    choices:
+    - Pig
+    - Sock
+    - Train
+    category: English_Sound_Words
+  - question: סוּפּ
+    answer: Soup
+    choices:
+    - Rain
+    - Chair
+    - Car
+    category: English_Sound_Words
+  - question: ג'וּס
+    answer: Juice
+    choices:
+    - Ball
+    - Hat
+    - Pig
+    category: English_Sound_Words
+  - question: וֹוטֶר
+    answer: Water
+    choices:
+    - Dog
+    - Book
+    - Kite
+    category: English_Sound_Words
+  - question: רֵיין
+    answer: Rain
+    choices:
+    - Cup
+    - Lamp
+    - Fish
+    category: English_Sound_Words
+  - question: סְנוֹאוּ
+    answer: Snow
+    choices:
+    - Boat
+    - Hat
+    - Window
+    category: English_Sound_Words
+  - question: קְלַאוּד
+    answer: Cloud
+    choices:
+    - Hat
+    - King
+    - Pig
+    category: English_Sound_Words
+  - question: וִינְד
+    answer: Wind
+    choices:
+    - Water
+    - Doll
+    - Foot
+    category: English_Sound_Words
+  - question: סְקַיי
+    answer: Sky
+    choices:
+    - Fish
+    - Duck
+    - Pig
+    category: English_Sound_Words
+  - question: פְּלֵיין
+    answer: Plane
+    choices:
+    - Cap
+    - Pocket
+    - Tree
+    category: English_Sound_Words
+  - question: בּוֹט
+    answer: Boat
+    choices:
+    - Lion
+    - Sun
+    - Ring
+    category: English_Sound_Words
+  - question: טְרֵיין
+    answer: Train
+    choices:
+    - Pig
+    - Ball
+    - Pony
+    category: English_Sound_Words
+  - question: בַּייק
+    answer: Bike
+    choices:
+    - Bird
+    - Hat
+    - Candy
+    category: English_Sound_Words
+  - question: רוֹד
+    answer: Road
+    choices:
+    - Ball
+    - Lion
+    - Tree
+    category: English_Sound_Words
+  - question: סְטְרִיט
+    answer: Street
+    choices:
+    - Bird
+    - Car
+    - Duck
+    category: English_Sound_Words
+  - question: פַּארְק
+    answer: Park
+    choices:
+    - Lion
+    - Fish
+    - Cloud
+    category: English_Sound_Words
+  - question: פַארְם
+    answer: Farm
+    choices:
+    - Doll
+    - Box
+    - Teddy
+    category: English_Sound_Words
+  - question: הוֹם
+    answer: Home
+    choices:
+    - Bird
+    - Cat
+    - Duck
+    category: English_Sound_Words
+  - question: הַאוּס
+    answer: House
+    choices:
+    - Pig
+    - Cap
+    - Ball
+    category: English_Sound_Words
+  - question: בֵּייבִּי
+    answer: Baby
+    choices:
+    - Queen
+    - Flag
+    - Road
+    category: English_Sound_Words
+  - question: מָאמִי
+    answer: Mommy
+    choices:
+    - Dog
+    - Hat
+    - Wall
+    category: English_Sound_Words
+  - question: דַאדִי
+    answer: Daddy
+    choices:
+    - Fish
+    - Crown
+    - Sun
+    category: English_Sound_Words
+  - question: סִיסְטֶר
+    answer: Sister
+    choices:
+    - Cow
+    - Friend
+    - Apple
+    category: English_Sound_Words
+  - question: בְּרַדֶר
+    answer: Brother
+    choices:
+    - Hat
+    - Sun
+    - Toy
+    category: English_Sound_Words
+  - question: פְרֶנְד
+    answer: Friend
+    choices:
+    - Cat
+    - Drum
+    - Window
+    category: English_Sound_Words
+  - question: הֶנְד
+    answer: Hand
+    choices:
+    - Ball
+    - Book
+    - Table
+    category: English_Sound_Words
+  - question: פוּט
+    answer: Foot
+    choices:
+    - Bird
+    - Pig
+    - Rabbit
+    category: English_Sound_Words
+  - question: הֶד
+    answer: Head
+    choices:
+    - Fish
+    - Toy
+    - Lion
+    category: English_Sound_Words
+  - question: נוֹז
+    answer: Nose
+    choices:
+    - Dog
+    - Bus
+    - Tree
+    category: English_Sound_Words
+  - question: אִיר
+    answer: Ear
+    choices:
+    - Calf
+    - Pig
+    - Door
+    category: English_Sound_Words
+  - question: אַיי
+    answer: Eye
+    choices:
+    - Computer
+    - Bed
+    - Plate
+    category: English_Sound_Words
+  - question: מַאוּתְ
+    answer: Mouth
+    choices:
+    - Sheep
+    - Pig
+    - Rain
+    category: English_Sound_Words
+  - question: טוּתְ
+    answer: Tooth
+    choices:
+    - Boat
+    - Cat
+    - Fish
+    category: English_Sound_Words
+  - question: קְלוֹק
+    answer: Clock
+    choices:
+    - Duck
+    - Chair
+    - Dog
+    category: English_Sound_Words
+  - question: בֶּל
+    answer: Bell
+    choices:
+    - Kite
+    - Lion
+    - Pig
+    category: English_Sound_Words
+  - question: רִינְג
+    answer: Ring
+    choices:
+    - Doll
+    - Fish
+    - Flag
+    category: English_Sound_Words
+  - question: קִינְג
+    answer: King
+    choices:
+    - Pig
+    - Sun
+    - Duck
+    category: English_Sound_Words
+  - question: קְוִין
+    answer: Queen
+    choices:
+    - Flag
+    - Sheep
+    - Lion
+    category: English_Sound_Words
+  - question: פְלָאג
+    answer: Flag
+    choices:
+    - Cow
+    - Plane
+    - Pig
+    category: English_Sound_Words
+  - question: דְרָאם
+    answer: Drum
+    choices:
+    - Hat
+    - Ball
+    - Pig
+    category: English_Sound_Words
+  - question: קַייט
+    answer: Kite
+    choices:
+    - Car
+    - Doll
+    - Sun
+    category: English_Sound_Words
+  - question: לֶמְפּ
+    answer: Lamp
+    choices:
+    - Pig
+    - Lion
+    - Book
+    category: English_Sound_Words
+  - question: גִיפְט
+    answer: Gift
+    choices:
+    - Bird
+    - Foot
+    - Lion
+    category: English_Sound_Words
+  - question: קֶנְדִי
+    answer: Candy
+    choices:
+    - Fish
+    - Cat
+    - Wolf
+    category: English_Sound_Words
+  - question: קוּקִי
+    answer: Cookie
+    choices:
+    - Bear
+    - Plate
+    - Pig
+    category: English_Sound_Words
+  - question: בֶּר
+    answer: Bear
+    choices:
+    - Cat
+    - Rain
+    - Clock
+    category: English_Sound_Words
+  - question: לַייְאָן
+    answer: Lion
+    choices:
+    - Dog
+    - Fish
+    - Plate
+    category: English_Sound_Words
+  - question: קְוִין
+    answer: Queen
+    choices:
+    - Flag
+    - Sheep
+    - Lion
+    category: English_Sound_Words
+  - question: פְלָאג
+    answer: Flag
+    choices:
+    - Cow
+    - Plane
+    - Pig
+    category: English_Sound_Words

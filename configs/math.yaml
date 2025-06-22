@@ -2,6 +2,7 @@ math_game:
   type: "math"
   name: "משחק זיכרון מתמטי"
   description: "תרגול פעולות חשבון"
+  showTimer: true
   operations:
     addition:
       symbol: "+"

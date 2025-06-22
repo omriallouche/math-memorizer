@@ -281,6 +281,12 @@ class GameConfig {
     checkAnswer(userAnswer, correctAnswer) {
         return userAnswer === correctAnswer;
     }
+
+    isTimerShown() {
+        // Use the value of the showTimerCheckbox instead of config
+        const checkbox = document.getElementById('showTimerCheckbox');
+        return checkbox ? checkbox.checked : true;
+    }
 }
 
 class MathMemoryGame {
@@ -959,9 +965,11 @@ class MathMemoryGame {
     updateStatsTabs() {
         const statsTabs = document.getElementById('statsTabs');
         const statsDescription = document.getElementById('statsDescription');
-        
         statsTabs.innerHTML = '';
-        
+        if (!this.gameConfig.isTimerShown()) {
+            statsDescription.textContent = 'הטיימר כבוי - אין סטטיסטיקות זמן.';
+            return;
+        }
         if (this.gameConfig.config.type === 'math') {
             // Math game tabs
             const operations = ['addition', 'subtraction', 'multiplication', 'division'];
@@ -980,7 +988,6 @@ class MathMemoryGame {
                 });
                 statsTabs.appendChild(button);
             });
-            
             statsDescription.textContent = 'זמנים ממוצעים בשניות לכל שילוב:';
         } else if (this.gameConfig.config.type === 'language') {
             // Language game tabs
@@ -1000,10 +1007,8 @@ class MathMemoryGame {
                 });
                 statsTabs.appendChild(button);
             });
-            
             statsDescription.textContent = 'זמנים ממוצעים בשניות לכל מילה:';
         }
-        
         // Set initial current operation/category
         if (this.gameConfig.config.type === 'math') {
             this.currentOperation = 'addition';
@@ -1138,6 +1143,17 @@ class MathMemoryGame {
         const characterContainer = document.getElementById('characterContainer');
         characterContainer.innerHTML = `<img src="${this.characterImages[this.currentCharacter]}" alt="Disney Character">`;
         
+        // Control timer visibility based on configuration
+        const timerContainer = document.querySelector('.timer-container');
+        const totalTimerElement = document.getElementById('totalTimer');
+        if (this.gameConfig.isTimerShown()) {
+            timerContainer.style.display = 'block';
+            totalTimerElement.style.display = 'block';
+        } else {
+            timerContainer.style.display = 'none';
+            totalTimerElement.style.display = 'none';
+        }
+        
         document.getElementById('gameSetup').style.display = 'none';
         document.getElementById('statsScreen').style.display = 'none';
         document.getElementById('tutorialScreen').style.display = 'none';
@@ -1148,6 +1164,8 @@ class MathMemoryGame {
         const mcCheckbox = document.getElementById('multipleChoiceMode');
         this.multipleChoiceMode = mcCheckbox && mcCheckbox.checked;
         this.showNextExercise();
+
+        document.getElementById('exercise').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     showNextExercise() {
@@ -1206,6 +1224,12 @@ class MathMemoryGame {
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
         }
+        
+        // Only start timer if it should be shown
+        if (!this.gameConfig.isTimerShown()) {
+            return;
+        }
+        
         const timerElement = document.getElementById('timer');
         timerElement.textContent = '0.0s';
         
@@ -1221,14 +1245,22 @@ class MathMemoryGame {
         if (this.totalTimerInterval) {
             clearInterval(this.totalTimerInterval);
         }
+        
         const totalTimerElement = document.getElementById('totalTimer');
         this.totalTime = 0;
-        totalTimerElement.textContent = `סה"כ זמן: 0.0s`;
+        
+        // Always initialize the display, but only show if configured
+        if (this.gameConfig.isTimerShown()) {
+            totalTimerElement.textContent = `סה"כ זמן: 0.0s`;
+        }
         
         this.totalTimerInterval = setInterval(() => {
             if (!this.isPaused) {
                 this.totalTime += 0.1;
-                totalTimerElement.textContent = `סה"כ זמן: ${this.totalTime.toFixed(1)}s`;
+                // Only update display if timer should be shown
+                if (this.gameConfig.isTimerShown()) {
+                    totalTimerElement.textContent = `סה"כ זמן: ${this.totalTime.toFixed(1)}s`;
+                }
             }
         }, 100);
     }
@@ -1293,7 +1325,10 @@ class MathMemoryGame {
     updateStatsTable() {
         const statsContainer = document.querySelector('.stats-container');
         statsContainer.innerHTML = '';
-        
+        if (!this.gameConfig.isTimerShown()) {
+            statsContainer.innerHTML = '<p>הטיימר כבוי - אין סטטיסטיקות זמן.</p>';
+            return;
+        }
         if (this.gameConfig.config.type === 'math') {
             this.updateMathStatsTable(statsContainer);
         } else if (this.gameConfig.config.type === 'language') {
@@ -1371,23 +1406,28 @@ class MathMemoryGame {
         if (this.totalTimerInterval) {
             clearInterval(this.totalTimerInterval);
         }
-
         // Hide game screen, show end screen
         document.getElementById('gameScreen').style.display = 'none';
         const endScreen = document.getElementById('endScreen');
         endScreen.style.display = 'block';
-
         // Show character image
         const endCharacterContainer = document.getElementById('endCharacterContainer');
         endCharacterContainer.innerHTML = `<img src="${this.characterImages[this.currentCharacter]}" alt="Disney Character">`;
-
-        // Show total time
-        document.getElementById('endTotalTime').textContent = `סה\"כ זמן: ${this.totalTime.toFixed(1)} שניות`;
-
+        // Show total time only if timer is configured to be shown
+        const endTotalTimeElement = document.getElementById('endTotalTime');
+        if (this.gameConfig.isTimerShown()) {
+            endTotalTimeElement.textContent = `סה"כ זמן: ${this.totalTime.toFixed(1)} שניות`;
+            endTotalTimeElement.style.display = 'block';
+        } else {
+            endTotalTimeElement.style.display = 'none';
+        }
         // Find 5 slowest exercises from this session (for math exercises)
         const slowestExercisesDiv = document.getElementById('slowestExercises');
+        if (!this.gameConfig.isTimerShown()) {
+            slowestExercisesDiv.innerHTML = '<p>הטיימר כבוי - אין תרגילים איטיים.</p>';
+            return;
+        }
         let sessionExercises = [];
-        
         if (this.gameConfig.config.type === 'math') {
             sessionExercises = this.exercises
                 .filter(ex => ex.type === 'math')
@@ -1413,23 +1453,19 @@ class MathMemoryGame {
                     };
                 });
         }
-        
         // Sort by time descending, take 5
         const slowest = sessionExercises.sort((a, b) => b.time - a.time).slice(0, 5);
         slowestExercisesDiv.innerHTML = '';
         slowest.forEach((exercise) => {
             const div = document.createElement('div');
             div.className = 'exercise-item';
-            
             if (exercise.type === 'math') {
                 div.textContent = `${exercise.question} (${(exercise.time/1000).toFixed(1)}s)`;
             } else if (exercise.type === 'language') {
                 div.textContent = `${exercise.data.hebrew} → ${exercise.data.english} (${(exercise.time/1000).toFixed(1)}s)`;
             }
-            
             slowestExercisesDiv.appendChild(div);
         });
-
         // Back to setup button
         document.getElementById('backToSetupButton').onclick = () => {
             endScreen.style.display = 'none';

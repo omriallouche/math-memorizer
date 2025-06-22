@@ -2,6 +2,7 @@ language_game:
   type: "language"
   name: "משחק שפה"
   description: "תרגול אנגלית"
+  showTimer: true
   categories:
     animals:
       name: "חיות"
