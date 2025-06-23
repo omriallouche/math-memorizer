@@ -1,4 +1,4 @@
-math_game:
+game:
   type: "math"
   name: "משחק זיכרון מתמטי"
   description: "תרגול פעולות חשבון"
@@ -26,6 +26,7 @@ math_game:
   exerciseCount: 20
   multipleChoice:
     enabled: true
+    checked: false
     choiceCount: 4
     constraints:
       nonNegative: true

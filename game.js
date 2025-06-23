@@ -21,10 +21,10 @@ class GameConfig {
     async setGameType(type) {
         this.gameType = type;
         const configMap = {
-            'math': { path: 'configs/math.yaml', key: 'math_game' },
-            'language': { path: 'configs/language.yaml', key: 'language_game' },
-            'gifted': { path: 'configs/gifted_youth_math.yaml', key: 'gifted_youth_game' },
-            'english_sounds': { path: 'configs/english_sounds.yaml', key: 'english_sounds' }
+            'math': { path: 'configs/math.yaml', key: 'game' },
+            'language': { path: 'configs/language.yaml', key: 'game' },
+            'gifted': { path: 'configs/gifted_youth_math.yaml', key: 'game' },
+            'english_sounds': { path: 'configs/english_sounds.yaml', key: 'game' }
         };
 
         const configInfo = configMap[type];
@@ -618,7 +618,16 @@ class MathMemoryGame {
         this.setupNumberSelection();
 
         const multipleChoiceCheckbox = document.getElementById('multipleChoiceMode');
-        multipleChoiceCheckbox.checked = this.multipleChoiceMode;
+        if (this.gameConfig.config.multipleChoice) {
+            multipleChoiceCheckbox.checked = this.gameConfig.config.multipleChoice.checked;
+            multipleChoiceCheckbox.disabled = !this.gameConfig.config.multipleChoice.enabled;
+            this.multipleChoiceMode = multipleChoiceCheckbox.checked;
+        } else {
+            multipleChoiceCheckbox.checked = false;
+            multipleChoiceCheckbox.disabled = true;
+            this.multipleChoiceMode = false;
+        }
+
         multipleChoiceCheckbox.addEventListener('change', (e) => {
             this.multipleChoiceMode = e.target.checked;
         });
@@ -708,25 +717,22 @@ class MathMemoryGame {
         numberSelection.style.display = 'none';
         categorySelection.style.display = 'block';
         multipleChoiceToggle.style.display = 'block';
-        multipleChoiceCheckbox.checked = false;
-        multipleChoiceCheckbox.disabled = false;
+        
+        if (this.gameConfig.config.multipleChoice) {
+            const mcConfig = this.gameConfig.config.multipleChoice;
+            multipleChoiceCheckbox.checked = mcConfig.checked === true;
+            multipleChoiceCheckbox.disabled = mcConfig.enabled === false;
+            this.multipleChoiceMode = multipleChoiceCheckbox.checked;
+        } else {
+            multipleChoiceCheckbox.checked = false;
+            multipleChoiceCheckbox.disabled = true; // if no config, disable it
+            this.multipleChoiceMode = false;
+        }
 
         if (type === 'math') {
             operationSelection.style.display = 'block';
             numberSelection.style.display = 'block';
             categorySelection.style.display = 'none';
-            multipleChoiceCheckbox.disabled = false;
-        } else if (type === 'language') {
-            multipleChoiceCheckbox.checked = true;
-            multipleChoiceCheckbox.disabled = true;
-            this.multipleChoiceMode = true;
-        } else if (type === 'gifted') {
-            multipleChoiceCheckbox.checked = true;
-            multipleChoiceCheckbox.disabled = true;
-            this.multipleChoiceMode = true;
-        } else if (type === 'english_sounds') {
-            multipleChoiceCheckbox.disabled = false;
-            // Do not force multipleChoiceMode, let user control
         }
     }
 
@@ -1169,11 +1175,7 @@ class MathMemoryGame {
         this.startTotalTimer();
         // For gifted, force multiple choice; for english_sounds, let user control
         const mcCheckbox = document.getElementById('multipleChoiceMode');
-        if (this.gameConfig.config.type === 'gifted') {
-            this.multipleChoiceMode = true;
-        } else {
-            this.multipleChoiceMode = mcCheckbox && mcCheckbox.checked;
-        }
+        this.multipleChoiceMode = mcCheckbox && mcCheckbox.checked;
         this.showNextExercise();
 
         document.getElementById('exercise').scrollIntoView({ behavior: 'smooth', block: 'start' });

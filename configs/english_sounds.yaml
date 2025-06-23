@@ -1,4 +1,4 @@
-english_sounds:
+game:
   type: multiple_choice
   name: צלילי אנגלית
   description: תרגול זיהוי מילות אנגלית לפי צליל
@@ -7,7 +7,8 @@ english_sounds:
     English_Sound_Words:
       name: צלילי אנגלית
   multipleChoice:
-    enabled: true
+    enabled: false
+    checked: true
     choiceCount: 4
   scoring:
     trackTime: true

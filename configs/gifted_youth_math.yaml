@@ -1,4 +1,4 @@
- gifted_youth_game:
+ game:
   type: "multiple_choice"
   name: "מחוננים"
   description: "תרגול כמותי למבחן מחוננים"
@@ -22,6 +22,7 @@
       name: "תמונות"
   multipleChoice:
     enabled: true
+    checked: true
     choiceCount: 4
   scoring:
     trackTime: true
