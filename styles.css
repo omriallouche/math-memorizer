@@ -127,6 +127,7 @@ label {
     font-size: 1.2rem;
     color: #636e72;
     margin-top: 0.5rem;
+    display: none !important;
 }
 
 .pause-button {
@@ -139,6 +140,7 @@ label {
     align-items: center;
     justify-content: center;
     transition: background-color 0.2s;
+    vertical-align: middle;
 }
 
 .pause-button:hover {

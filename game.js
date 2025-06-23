@@ -179,9 +179,17 @@ class GameConfig {
             return this.generateMathChoices(correctAnswer, exerciseData);
         } else if (this.config.type === 'language') {
             return this.generateLanguageChoices(correctAnswer, exerciseData);
-        } else if (this.config.type === 'multiple_choice') {
+        } else if (
+            this.config.type === 'multiple_choice' ||
+            this.config.type === 'gifted' ||
+            this.config.type === 'english_sounds'
+        ) {
             // For gifted and english_sounds, choices are pre-defined in the exercise data
-            const choices = [...exerciseData.choices, correctAnswer];
+            // Add correctAnswer if not already present
+            let choices = Array.isArray(exerciseData.choices) ? [...exerciseData.choices] : [];
+            if (!choices.includes(correctAnswer)) {
+                choices.push(correctAnswer);
+            }
             // Shuffle
             for (let i = choices.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
