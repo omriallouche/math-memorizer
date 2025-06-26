@@ -586,6 +586,13 @@ class MathMemoryGame {
         this.loadUserSettings(userId);
         this.loadUserStats();
         this.updateUserSelect();
+        // Refresh number selection UI
+        this.setupNumberSelection();
+        // Refresh operation checkboxes UI
+        Object.keys(this.operations).forEach(operation => {
+            const checkbox = document.getElementById(operation);
+            if (checkbox) checkbox.checked = this.operations[operation];
+        });
         // Maybe other UI updates are needed here when a user is switched
     }
 
