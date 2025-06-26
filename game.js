@@ -1202,14 +1202,23 @@ class MathMemoryGame {
             return;
         }
         const exercise = this.exercises[this.currentExercise];
+        // Helper to check if a value is an image path
+        function isImagePath(val) {
+            return typeof val === 'string' && val.match(/\.(jpg|jpeg|png|gif|bmp|svg)$/i);
+        }
         // Display the question
-        let questionText = exercise.question;
+        let questionContent = '';
+        if (isImagePath(exercise.question)) {
+            questionContent = `<img src="${exercise.question}" class="exercise-image" alt="שאלה">`;
+        } else {
+            questionContent = exercise.question;
+        }
         // For english_sounds, add a subtitle for clarity
         if (this.gameConfig.config.type === 'english_sounds') {
-            questionText = `<div style='font-size:2.5rem;'>${exercise.question}</div><div style='font-size:1.2rem;color:#888;'>בחר את המילה באנגלית המתאימה</div>`;
-            document.getElementById('exercise').innerHTML = questionText;
+            questionContent = `<div style='font-size:2.5rem;'>${questionContent}</div><div style='font-size:1.2rem;color:#888;'>בחר את המילה באנגלית המתאימה</div>`;
+            document.getElementById('exercise').innerHTML = questionContent;
         } else {
-            document.getElementById('exercise').textContent = questionText;
+            document.getElementById('exercise').innerHTML = questionContent;
         }
         document.getElementById('progressText').textContent = 
             `${this.currentExercise + 1}/${this.gameConfig.config.exerciseCount}`;
@@ -1230,7 +1239,11 @@ class MathMemoryGame {
             choices.forEach(choice => {
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
-                btn.textContent = choice;
+                if (isImagePath(choice)) {
+                    btn.innerHTML = `<img src="${choice}" class="exercise-image" alt="אפשרות">`;
+                } else {
+                    btn.textContent = choice;
+                }
                 btn.onclick = () => {
                     if (this.gameConfig.checkAnswer(choice, exercise.correctAnswer)) {
                         this.handleAnswer();
