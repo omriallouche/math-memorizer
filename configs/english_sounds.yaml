@@ -1,11 +1,11 @@
 game:
   type: multiple_choice
-  name: צלילי אנגלית
-  description: תרגול זיהוי מילות אנגלית לפי צליל
+  name: "צלילי אנגלית"
+  description: "תרגול זיהוי מילות אנגלית לפי צליל"
   showTimer: false
   categories:
     English_Sound_Words:
-      name: צלילי אנגלית
+      name: "צלילי אנגלית"
   multipleChoice:
     enabled: false
     checked: true
@@ -15,153 +15,178 @@ game:
     trackAccuracy: true
   exerciseCount: 100
   content:
-    - answer: Dog דוֹג
+    - answer: "Dog דוֹג"
       choices:
-      - Cat קַט
-      - Horse הוֹרְס
-      - Cow קוֹאוּ
-      question: כֶּלֶב
-    - answer: Cat קַט
+        - "Cat קַט"
+        - "Horse הוֹרְס"
+        - "Cow קוֹאוּ"
+      question: "כֶּלֶב"
+      category: "English_Sound_Words"
+    - answer: "Cat קַט"
       choices:
-      - Horse הוֹרְס
-      - Cow קוֹאוּ
-      - Dog דוֹג
-      question: חָתוּל
-    - answer: Horse הוֹרְס
+        - "Horse הוֹרְס"
+        - "Cow קוֹאוּ"
+        - "Dog דוֹג"
+      question: "חָתוּל"
+      category: "English_Sound_Words"
+    - answer: "Horse הוֹרְס"
       choices:
-      - Cow קוֹאוּ
-      - Cat קַט
-      - Bird בּרד
-      question: סוּס
-    - answer: Cow קוֹאוּ
+        - "Cow קוֹאוּ"
+        - "Cat קַט"
+        - "Bird בּרד"
+      question: "סוּס"
+      category: "English_Sound_Words"
+    - answer: "Cow קוֹאוּ"
       choices:
-      - Dog דוֹג
-      - Cat קַט
-      - Bird בּרד
-      question: פָּרָה
-    - answer: Bird בּרד
+        - "Dog דוֹג"
+        - "Cat קַט"
+        - "Bird בּרד"
+      question: "פָּרָה"
+      category: "English_Sound_Words"
+    - answer: "Bird בּרד"
       choices:
-      - Dog דוֹג
-      - Cat קַט
-      - Cow קוֹאוּ
-      question: צִפּוֹר
-    - answer: Red רֶד
+        - "Dog דוֹג"
+        - "Cat קַט"
+        - "Cow קוֹאוּ"
+      question: "צִפּוֹר"
+      category: "English_Sound_Words"
+    - answer: "Red רֶד"
       choices:
-      - Yellow יֶלוּ
-      - Blue בּלוּ
-      - Green גְּרִין
-      question: אָדוֹם
-    - answer: Blue בּלוּ
+        - "Yellow יֶלוּ"
+        - "Blue בּלוּ"
+        - "Green גְּרִין"
+      question: "אָדוֹם"
+      category: "English_Sound_Words"
+    - answer: "Blue בּלוּ"
       choices:
-      - Yellow יֶלוּ
-      - Black בּלָאק
-      - Green גְּרִין
-      question: כָּחֹל
-    - answer: Green גְּרִין
+        - "Yellow יֶלוּ"
+        - "Black בּלָאק"
+        - "Green גְּרִין"
+      question: "כָּחֹל"
+      category: "English_Sound_Words"
+    - answer: "Green גְּרִין"
       choices:
-      - Red רֶד
-      - Blue בּלוּ
-      - Black בּלָאק
-      question: יָרוֹק
-    - answer: Yellow יֶלוּ
+        - "Red רֶד"
+        - "Blue בּלוּ"
+        - "Black בּלָאק"
+      question: "יָרוֹק"
+      category: "English_Sound_Words"
+    - answer: "Yellow יֶלוּ"
       choices:
-      - Green גְּרִין
-      - Black בּלָאק
-      - Red רֶד
-      question: צָהֹב
-    - answer: Black בּלָאק
+        - "Green גְּרִין"
+        - "Black בּלָאק"
+        - "Red רֶד"
+      question: "צָהֹב"
+      category: "English_Sound_Words"
+    - answer: "Black בּלָאק"
       choices:
-      - Blue בּלוּ
-      - Red רֶד
-      - Green גְּרִין
-      question: שָׁחוֹר
-    - answer: One וואן
+        - "Blue בּלוּ"
+        - "Red רֶד"
+        - "Green גְּרִין"
+      question: "שָׁחוֹר"
+      category: "English_Sound_Words"
+    - answer: "One וואן"
       choices:
-      - Three תְּרִי
-      - Two טוּ
-      - Five פַיְב
-      question: אֶחָד
-    - answer: Two טוּ
+        - "Three תְּרִי"
+        - "Two טוּ"
+        - "Five פַיְב"
+      question: "אֶחָד"
+      category: "English_Sound_Words"
+    - answer: "Two טוּ"
       choices:
-      - One וואן
-      - Five פַיְב
-      - Four פוֹר
-      question: שְׁתַּיִם
-    - answer: Three תְּרִי
+        - "One וואן"
+        - "Five פַיְב"
+        - "Four פוֹר"
+      question: "שְׁתַּיִם"
+      category: "English_Sound_Words"
+    - answer: "Three תְּרִי"
       choices:
-      - One וואן
-      - Five פַיְב
-      - Four פוֹר
-      question: שָׁלֹשׁ
-    - answer: Four פוֹר
+        - "One וואן"
+        - "Five פַיְב"
+        - "Four פוֹר"
+      question: "שָׁלֹשׁ"
+      category: "English_Sound_Words"
+    - answer: "Four פוֹר"
       choices:
-      - Five פַיְב
-      - Three תְּרִי
-      - Two טוּ
-      question: אַרְבַּע
-    - answer: Five פַיְב
+        - "Five פַיְב"
+        - "Three תְּרִי"
+        - "Two טוּ"
+      question: "אַרְבַּע"
+      category: "English_Sound_Words"
+    - answer: "Five פַיְב"
       choices:
-      - Four פוֹר
-      - One וואן
-      - Three תְּרִי
-      question: חָמֵשׁ
-    - answer: Father פָאדֶר
+        - "Four פוֹר"
+        - "One וואן"
+        - "Three תְּרִי"
+      question: "חָמֵשׁ"
+      category: "English_Sound_Words"
+    - answer: "Father פָאדֶר"
       choices:
-      - Mother מָאדֶר
-      - Brother בּרָדֶר
-      - Grandfather גְרָאנְדְפָאדֶר
-      question: אַבָּא
-    - answer: Mother מָאדֶר
+        - "Mother מָאדֶר"
+        - "Brother בּרָדֶר"
+        - "Grandfather גְרָאנְדְפָאדֶר"
+      question: "אַבָּא"
+      category: "English_Sound_Words"
+    - answer: "Mother מָאדֶר"
       choices:
-      - Grandfather גְרָאנְדְפָאדֶר
-      - Brother בּרָדֶר
-      - Father פָאדֶר
-      question: אִמָּא
-    - answer: Brother בּרָדֶר
+        - "Grandfather גְרָאנְדְפָאדֶר"
+        - "Brother בּרָדֶר"
+        - "Father פָאדֶר"
+      question: "אִמָּא"
+      category: "English_Sound_Words"
+    - answer: "Brother בּרָדֶר"
       choices:
-      - Grandfather גְרָאנְדְפָאדֶר
-      - Father פָאדֶר
-      - Sister סִיסְטֶר
-      question: אָח
-    - answer: Sister סִיסְטֶר
+        - "Grandfather גְרָאנְדְפָאדֶר"
+        - "Father פָאדֶר"
+        - "Sister סִיסְטֶר"
+      question: "אָח"
+      category: "English_Sound_Words"
+    - answer: "Sister סִיסְטֶר"
       choices:
-      - Brother בּרָדֶר
-      - Mother מָאדֶר
-      - Grandfather גְרָאנְדְפָאדֶר
-      question: אָחוֹת
-    - answer: Grandfather גְרָאנְדְפָאדֶר
+        - "Brother בּרָדֶר"
+        - "Mother מָאדֶר"
+        - "Grandfather גְרָאנְדְפָאדֶר"
+      question: "אָחוֹת"
+      category: "English_Sound_Words"
+    - answer: "Grandfather גְרָאנְדְפָאדֶר"
       choices:
-      - Mother מָאדֶר
-      - Brother בּרָדֶר
-      - Father פָאדֶר
-      question: סַבָּא
-    - answer: Bread בּרֶד
+        - "Mother מָאדֶר"
+        - "Brother בּרָדֶר"
+        - "Father פָאדֶר"
+      question: "סַבָּא"
+      category: "English_Sound_Words"
+    - answer: "Bread בּרֶד"
       choices:
-      - Apple אָפֶּל
-      - Milk מִלְק
-      - Banana בָּנָנָה
-      question: לֶחֶם
-    - answer: Milk מִלְק
+        - "Apple אָפֶּל"
+        - "Milk מִלְק"
+        - "Banana בָּנָנָה"
+      question: "לֶחֶם"
+      category: "English_Sound_Words"
+    - answer: "Milk מִלְק"
       choices:
-      - Banana בָּנָנָה
-      - Bread בּרֶד
-      - Apple אָפֶּל
-      question: חָלָב
-    - answer: Apple אָפֶּל
+        - "Banana בָּנָנָה"
+        - "Bread בּרֶד"
+        - "Apple אָפֶּל"
+      question: "חָלָב"
+      category: "English_Sound_Words"
+    - answer: "Apple אָפֶּל"
       choices:
-      - Banana בָּנָנָה
-      - Milk מִלְק
-      - Bread בּרֶד
-      question: תַּפּוּחַ
-    - answer: Banana בָּנָנָה
+        - "Banana בָּנָנָה"
+        - "Milk מִלְק"
+        - "Bread בּרֶד"
+      question: "תַּפּוּחַ"
+      category: "English_Sound_Words"
+    - answer: "Banana בָּנָנָה"
       choices:
-      - Cake כֵּיק
-      - Milk מִלְק
-      - Bread בּרֶד
-      question: בָּנָנָה
-    - answer: Cake כֵּיק
+        - "Cake כֵּיק"
+        - "Milk מִלְק"
+        - "Bread בּרֶד"
+      question: "בָּנָנָה"
+      category: "English_Sound_Words"
+    - answer: "Cake כֵּיק"
       choices:
-      - Bread בּרֶד
-      - Milk מִלְק
-      - Apple אָפֶּל
-      question: עוּגָה
+        - "Bread בּרֶד"
+        - "Milk מִלְק"
+        - "Apple אָפֶּל"
+      question: "עוּגָה"
+      category: "English_Sound_Words"
