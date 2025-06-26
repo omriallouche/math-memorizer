@@ -22,8 +22,9 @@ class GameConfig {
         this.gameType = type;
         const configMap = {
             'math': { path: 'configs/math.yaml', key: 'game' },
-            'language': { path: 'configs/language.yaml', key: 'game' },
+            'hebrew_vocabulary': { path: 'configs/hebrew_vocabulary.yaml', key: 'game' },
             'gifted': { path: 'configs/gifted_youth_math.yaml', key: 'game' },
+            'language': { path: 'configs/language.yaml', key: 'game' },
             'english_sounds': { path: 'configs/english_sounds.yaml', key: 'game' }
         };
 
@@ -86,7 +87,7 @@ class GameConfig {
             return this.generateMathExercise(selectedNumbers, enabledOperations);
         } else if (this.config.type === 'language') {
             return this.generateLanguageExercise();
-        } else if (this.config.type === 'gifted' || this.config.type === 'english_sounds') {
+        } else if (this.config.type === 'gifted' || this.config.type === 'english_sounds' || this.config.type === 'multiple_choice') {
             return this.generateGiftedExercise();
         }
         return null;
@@ -180,9 +181,7 @@ class GameConfig {
         } else if (this.config.type === 'language') {
             return this.generateLanguageChoices(correctAnswer, exerciseData);
         } else if (
-            this.config.type === 'multiple_choice' ||
-            this.config.type === 'gifted' ||
-            this.config.type === 'english_sounds'
+            this.config.type === 'multiple_choice'
         ) {
             // For gifted and english_sounds, choices are pre-defined in the exercise data
             // Add correctAnswer if not already present
@@ -656,7 +655,8 @@ class MathMemoryGame {
             { value: 'math', label: 'מתמטיקה' },
             { value: 'language', label: 'שפה' },
             { value: 'gifted', label: 'מחוננים' },
-            { value: 'english_sounds', label: 'צלילי אנגלית' }
+            { value: 'english_sounds', label: 'צלילי אנגלית' },
+            { value: 'hebrew_vocabulary', label: 'אוצר מילים' }
         ];
         gameTypes.forEach(game => {
             const option = document.createElement('option');
@@ -1134,7 +1134,7 @@ class MathMemoryGame {
                     this.exercises.push(exercise);
                 }
             }
-        } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted' || this.gameConfig.config.type === 'english_sounds') {
+        } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted' || this.gameConfig.config.type === 'multiple_choice') {
             for (let i = 0; i < this.gameConfig.config.exerciseCount; i++) {
                 const exercise = this.gameConfig.generateExercise();
                 if (exercise) {

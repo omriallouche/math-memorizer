@@ -1,5 +1,5 @@
 game:
-  type: multiple_choice
+  type: "multiple_choice"
   name: "צלילי אנגלית"
   description: "תרגול זיהוי מילות אנגלית לפי צליל"
   showTimer: false
