@@ -28,6 +28,10 @@
     trackTime: true
     trackAccuracy: true
   exerciseCount: 20
+  # Grid dimensions for the overlay (rows x cols)
+  grid:
+    rows: 4
+    cols: 5
   content:
   - question: "לדניאל היו 30 ₪ מסבא ו-18 ₪ מסבתא. הוא קנה צעצוע ב-32 ₪ ועוד ממתק ב-4 ₪. כמה כסף נשאר לו?"
     answer: "12"

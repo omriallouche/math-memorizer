@@ -14,6 +14,10 @@ game:
     trackTime: true
     trackAccuracy: true
   exerciseCount: 50
+  # Grid dimensions for the overlay (rows x cols)
+  grid:
+    rows: 4
+    cols: 5
   content:
     - answer: "מְנוֹרָה"
       choices:

@@ -37,14 +37,17 @@ class GameConfig {
                 if (loadedConfig && loadedConfig[key]) {
                     this.config = loadedConfig[key];
                     // this.config.type = type; // Always set to the selected type
-                    this.config.exerciseCount = 20;
+                    // Set exerciseCount from config, fallback to 20
+                    this.config.exerciseCount = this.config.exerciseCount || 20;
+                    // Set grid dimensions from config, fallback to 5x4
+                    this.config.grid = this.config.grid || { rows: 4, cols: 5 };
                 } else {
                     console.error(`Failed to load or parse config for type: ${type} from ${path}`);
-                    this.config = {}; // Set a default empty config on failure
+                    this.config = { exerciseCount: 20, grid: { rows: 4, cols: 5 } };
                 }
             } catch (error) {
                 console.error(`Error during config loading for type ${type}:`, error);
-                this.config = {};
+                this.config = { exerciseCount: 20, grid: { rows: 4, cols: 5 } };
             }
         } else {
             console.warn(`Unknown game type: "${type}". Defaulting to math.`);
@@ -676,7 +679,16 @@ class MathMemoryGame {
         const gridOverlay = document.getElementById('gridOverlay');
         gridOverlay.innerHTML = '';
         this.gridCells = [];
-        for (let i = 0; i < this.gameConfig.config.exerciseCount; i++) {
+        const rows = this.gameConfig.config.grid?.rows || 4;
+        const cols = this.gameConfig.config.grid?.cols || 5;
+        const totalCells = rows * cols;
+
+        // Set CSS grid style dynamically
+        gridOverlay.style.display = 'grid';
+        gridOverlay.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+        gridOverlay.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+        for (let i = 0; i < totalCells; i++) {
             const cell = document.createElement('div');
             cell.className = 'grid-cell';
             gridOverlay.appendChild(cell);
@@ -1124,21 +1136,58 @@ class MathMemoryGame {
 
     generateExercises() {
         this.exercises = [];
+        const askedQuestions = new Set();
         if (this.gameConfig.config.type === 'math') {
             const activeOperations = Object.entries(this.operations)
                 .filter(([_, active]) => active)
                 .map(([op]) => op);
-            for (let i = 0; i < this.gameConfig.config.exerciseCount; i++) {
+            let attempts = 0;
+            while (this.exercises.length < this.gameConfig.config.exerciseCount && attempts < 200) {
                 const exercise = this.gameConfig.generateExercise(this.selectedNumbers, activeOperations);
                 if (exercise) {
-                    this.exercises.push(exercise);
+                    // Create a unique key for the question
+                    let key;
+                    const { num1, num2, operation } = exercise.data;
+                    if (operation === 'addition' || operation === 'multiplication') {
+                        // Commutative: order doesn't matter
+                        const a = Math.min(num1, num2);
+                        const b = Math.max(num1, num2);
+                        key = `${a}${operation}${b}`;
+                    } else {
+                        key = `${num1}${operation}${num2}`;
+                    }
+                    if (!askedQuestions.has(key)) {
+                        askedQuestions.add(key);
+                        this.exercises.push(exercise);
+                    }
+                }
+                attempts++;
+                // Prevent infinite loop if not enough unique questions
+                if (attempts > 200 && this.exercises.length < this.gameConfig.config.exerciseCount) {
+                    break;
                 }
             }
         } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted' || this.gameConfig.config.type === 'multiple_choice') {
-            for (let i = 0; i < this.gameConfig.config.exerciseCount; i++) {
+            let attempts = 0;
+            while (this.exercises.length < this.gameConfig.config.exerciseCount && attempts < 200) {
                 const exercise = this.gameConfig.generateExercise();
                 if (exercise) {
-                    this.exercises.push(exercise);
+                    let key;
+                    if (exercise.type === 'language') {
+                        key = `${exercise.data.hebrew}-${exercise.data.english}`;
+                    } else if (exercise.type === 'gifted' || exercise.type === 'multiple_choice') {
+                        key = exercise.question;
+                    } else {
+                        key = JSON.stringify(exercise);
+                    }
+                    if (!askedQuestions.has(key)) {
+                        askedQuestions.add(key);
+                        this.exercises.push(exercise);
+                    }
+                }
+                attempts++;
+                if (attempts > 200 && this.exercises.length < this.gameConfig.config.exerciseCount) {
+                    break;
                 }
             }
         }
@@ -1292,7 +1341,7 @@ class MathMemoryGame {
         
         // Always initialize the display, but only show if configured
         if (this.gameConfig.isTimerShown()) {
-            totalTimerElement.textContent = `סה"כ זמן: 0.0s`;
+            totalTimerElement.textContent = `סה\"כ זמן: 0.0s`;
         }
         
         this.totalTimerInterval = setInterval(() => {
@@ -1300,7 +1349,7 @@ class MathMemoryGame {
                 this.totalTime += 0.1;
                 // Only update display if timer should be shown
                 if (this.gameConfig.isTimerShown()) {
-                    totalTimerElement.textContent = `סה"כ זמן: ${this.totalTime.toFixed(1)}s`;
+                    totalTimerElement.textContent = `סה\"כ זמן: ${this.totalTime.toFixed(1)}s`;
                 }
             }
         }, 100);
@@ -1457,7 +1506,7 @@ class MathMemoryGame {
         // Show total time only if timer is configured to be shown
         const endTotalTimeElement = document.getElementById('endTotalTime');
         if (this.gameConfig.isTimerShown()) {
-            endTotalTimeElement.textContent = `סה"כ זמן: ${this.totalTime.toFixed(1)} שניות`;
+            endTotalTimeElement.textContent = `סה\"כ זמן: ${this.totalTime.toFixed(1)} שניות`;
             endTotalTimeElement.style.display = 'block';
         } else {
             endTotalTimeElement.style.display = 'none';
@@ -1466,48 +1515,48 @@ class MathMemoryGame {
         const slowestExercisesDiv = document.getElementById('slowestExercises');
         if (!this.gameConfig.isTimerShown()) {
             slowestExercisesDiv.innerHTML = '<p>הטיימר כבוי - אין תרגילים איטיים.</p>';
-            return;
-        }
-        let sessionExercises = [];
-        if (this.gameConfig.config.type === 'math') {
-            sessionExercises = this.exercises
-                .filter(ex => ex.type === 'math')
-                .map((ex, idx) => {
-                    const time = this.exerciseTimes[ex.data.operation].get(`${ex.data.num1}${ex.data.operation}${ex.data.num2}`);
-                    return {
-                        ...ex,
-                        time: time ? time[time.length - 1] : 0,
-                        idx
-                    };
-                });
-        } else if (this.gameConfig.config.type === 'language') {
-            sessionExercises = this.exercises
-                .filter(ex => ex.type === 'language')
-                .map((ex, idx) => {
-                    const category = ex.data.category;
-                    const key = `${ex.data.hebrew}-${ex.data.english}`;
-                    const time = this.exerciseTimes[category]?.get(key);
-                    return {
-                        ...ex,
-                        time: time ? time[time.length - 1] : 0,
-                        idx
-                    };
-                });
-        }
-        // Sort by time descending, take 5
-        const slowest = sessionExercises.sort((a, b) => b.time - a.time).slice(0, 5);
-        slowestExercisesDiv.innerHTML = '';
-        slowest.forEach((exercise) => {
-            const div = document.createElement('div');
-            div.className = 'exercise-item';
-            if (exercise.type === 'math') {
-                div.textContent = `${exercise.question} (${(exercise.time/1000).toFixed(1)}s)`;
-            } else if (exercise.type === 'language') {
-                div.textContent = `${exercise.data.hebrew} → ${exercise.data.english} (${(exercise.time/1000).toFixed(1)}s)`;
+        } else {
+            let sessionExercises = [];
+            if (this.gameConfig.config.type === 'math') {
+                sessionExercises = this.exercises
+                    .filter(ex => ex.type === 'math')
+                    .map((ex, idx) => {
+                        const time = this.exerciseTimes[ex.data.operation].get(`${ex.data.num1}${ex.data.operation}${ex.data.num2}`);
+                        return {
+                            ...ex,
+                            time: time ? time[time.length - 1] : 0,
+                            idx
+                        };
+                    });
+            } else if (this.gameConfig.config.type === 'language') {
+                sessionExercises = this.exercises
+                    .filter(ex => ex.type === 'language')
+                    .map((ex, idx) => {
+                        const category = ex.data.category;
+                        const key = `${ex.data.hebrew}-${ex.data.english}`;
+                        const time = this.exerciseTimes[category]?.get(key);
+                        return {
+                            ...ex,
+                            time: time ? time[time.length - 1] : 0,
+                            idx
+                        };
+                    });
             }
-            slowestExercisesDiv.appendChild(div);
-        });
-        // Back to setup button
+            // Sort by time descending, take 5
+            const slowest = sessionExercises.sort((a, b) => b.time - a.time).slice(0, 5);
+            slowestExercisesDiv.innerHTML = '';
+            slowest.forEach((exercise) => {
+                const div = document.createElement('div');
+                div.className = 'exercise-item';
+                if (exercise.type === 'math') {
+                    div.textContent = `${exercise.question} (${(exercise.time/1000).toFixed(1)}s)`;
+                } else if (exercise.type === 'language') {
+                    div.textContent = `${exercise.data.hebrew} → ${exercise.data.english} (${(exercise.time/1000).toFixed(1)}s)`;
+                }
+                slowestExercisesDiv.appendChild(div);
+            });
+        }
+        // Back to setup button (always set this up)
         document.getElementById('backToSetupButton').onclick = () => {
             endScreen.style.display = 'none';
             document.getElementById('gameSetup').style.display = 'block';

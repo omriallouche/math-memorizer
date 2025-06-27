@@ -23,7 +23,11 @@ game:
   numberRange:
     min: 1
     max: 20
-  exerciseCount: 20
+  exerciseCount: 25
+  # Grid dimensions for the overlay (rows x cols)
+  grid:
+    rows: 5
+    cols: 5
   multipleChoice:
     enabled: true
     checked: false
