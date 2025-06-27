@@ -36,7 +36,7 @@ class GameConfig {
                 const loadedConfig = await this.loadYamlConfig(path);
                 if (loadedConfig && loadedConfig[key]) {
                     this.config = loadedConfig[key];
-                    this.config.type = type; // Always set to the selected type
+                    // this.config.type = type; // Always set to the selected type
                     this.config.exerciseCount = 20;
                 } else {
                     console.error(`Failed to load or parse config for type: ${type} from ${path}`);
