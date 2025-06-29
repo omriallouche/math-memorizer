@@ -289,8 +289,12 @@ class GameConfig {
         return userAnswer === correctAnswer;
     }
 
-    isTimerShown() {
-        // Use the value of the showTimerCheckbox instead of config
+    isTimerShown(userShowTimer = null) {
+        // Use the provided user setting if available, otherwise use the checkbox state
+        if (userShowTimer !== null) {
+            return userShowTimer;
+        }
+        // Fallback to checkbox state
         const checkbox = document.getElementById('showTimerCheckbox');
         return checkbox ? checkbox.checked : true;
     }
@@ -492,6 +496,9 @@ class MathMemoryGame {
             const settings = JSON.parse(savedSettings);
             this.operations = settings.operations;
             this.selectedNumbers = new Set(settings.selectedNumbers);
+            // Load timer and multiple choice settings
+            this.showTimer = settings.showTimer !== undefined ? settings.showTimer : true;
+            this.multipleChoiceMode = settings.multipleChoiceMode !== undefined ? settings.multipleChoiceMode : false;
         } else {
             // Default settings
             this.operations = {
@@ -501,6 +508,8 @@ class MathMemoryGame {
                 division: false
             };
             this.selectedNumbers = new Set();
+            this.showTimer = true;
+            this.multipleChoiceMode = false;
         }
     }
 
@@ -508,7 +517,9 @@ class MathMemoryGame {
         if (!this.currentUser) return;
         const settings = {
             operations: this.operations,
-            selectedNumbers: Array.from(this.selectedNumbers)
+            selectedNumbers: Array.from(this.selectedNumbers),
+            showTimer: this.showTimer,
+            multipleChoiceMode: this.multipleChoiceMode
         };
         localStorage.setItem(`mathGameSettings_${this.currentUser}`, JSON.stringify(settings));
     }
@@ -581,6 +592,8 @@ class MathMemoryGame {
             // Maybe clear settings or use defaults
             this.operations = { addition: true, subtraction: true, multiplication: false, division: false };
             this.selectedNumbers = new Set();
+            this.showTimer = true;
+            this.multipleChoiceMode = false;
             return;
         }
 
@@ -595,7 +608,15 @@ class MathMemoryGame {
             const checkbox = document.getElementById(operation);
             if (checkbox) checkbox.checked = this.operations[operation];
         });
-        // Maybe other UI updates are needed here when a user is switched
+        // Refresh timer and multiple choice UI
+        const showTimerCheckbox = document.getElementById('showTimerCheckbox');
+        if (showTimerCheckbox) {
+            showTimerCheckbox.checked = this.showTimer;
+        }
+        const multipleChoiceCheckbox = document.getElementById('multipleChoiceMode');
+        if (multipleChoiceCheckbox) {
+            multipleChoiceCheckbox.checked = this.multipleChoiceMode;
+        }
     }
 
     updateUserList() {
@@ -636,9 +657,10 @@ class MathMemoryGame {
 
         const multipleChoiceCheckbox = document.getElementById('multipleChoiceMode');
         if (this.gameConfig.config.multipleChoice) {
+            // Use config values directly
             multipleChoiceCheckbox.checked = this.gameConfig.config.multipleChoice.checked;
             multipleChoiceCheckbox.disabled = !this.gameConfig.config.multipleChoice.enabled;
-            this.multipleChoiceMode = multipleChoiceCheckbox.checked;
+            this.multipleChoiceMode = this.gameConfig.config.multipleChoice.checked;
         } else {
             multipleChoiceCheckbox.checked = false;
             multipleChoiceCheckbox.disabled = true;
@@ -647,7 +669,18 @@ class MathMemoryGame {
 
         multipleChoiceCheckbox.addEventListener('change', (e) => {
             this.multipleChoiceMode = e.target.checked;
+            this.saveUserSettings();
         });
+
+        // Set up timer checkbox
+        const showTimerCheckbox = document.getElementById('showTimerCheckbox');
+        if (showTimerCheckbox) {
+            showTimerCheckbox.checked = this.showTimer !== undefined ? this.showTimer : true;
+            showTimerCheckbox.addEventListener('change', (e) => {
+                this.showTimer = e.target.checked;
+                this.saveUserSettings();
+            });
+        }
     }
 
     setupGameTypeSelection() {
@@ -747,12 +780,12 @@ class MathMemoryGame {
         
         if (this.gameConfig.config.multipleChoice) {
             const mcConfig = this.gameConfig.config.multipleChoice;
-            multipleChoiceCheckbox.checked = mcConfig.checked === true;
-            multipleChoiceCheckbox.disabled = mcConfig.enabled === false;
-            this.multipleChoiceMode = multipleChoiceCheckbox.checked;
+            multipleChoiceCheckbox.checked = mcConfig.checked;
+            multipleChoiceCheckbox.disabled = !mcConfig.enabled;
+            this.multipleChoiceMode = mcConfig.checked;
         } else {
             multipleChoiceCheckbox.checked = false;
-            multipleChoiceCheckbox.disabled = true; // if no config, disable it
+            multipleChoiceCheckbox.disabled = true;
             this.multipleChoiceMode = false;
         }
 
@@ -1010,7 +1043,7 @@ class MathMemoryGame {
         const statsTabs = document.getElementById('statsTabs');
         const statsDescription = document.getElementById('statsDescription');
         statsTabs.innerHTML = '';
-        if (!this.gameConfig.isTimerShown()) {
+        if (!this.gameConfig.isTimerShown(this.showTimer)) {
             statsDescription.textContent = 'הטיימר כבוי - אין סטטיסטיקות זמן.';
             return;
         }
@@ -1223,7 +1256,7 @@ class MathMemoryGame {
         // Control timer visibility based on configuration
         const timerContainer = document.querySelector('.timer-container');
         const totalTimerElement = document.getElementById('totalTimer');
-        if (this.gameConfig.isTimerShown()) {
+        if (this.gameConfig.isTimerShown(this.showTimer)) {
             timerContainer.style.display = 'block';
             totalTimerElement.style.display = 'block';
         } else {
@@ -1316,7 +1349,7 @@ class MathMemoryGame {
         }
         
         // Only start timer if it should be shown
-        if (!this.gameConfig.isTimerShown()) {
+        if (!this.gameConfig.isTimerShown(this.showTimer)) {
             return;
         }
         
@@ -1340,7 +1373,7 @@ class MathMemoryGame {
         this.totalTime = 0;
         
         // Always initialize the display, but only show if configured
-        if (this.gameConfig.isTimerShown()) {
+        if (this.gameConfig.isTimerShown(this.showTimer)) {
             totalTimerElement.textContent = `סה\"כ זמן: 0.0s`;
         }
         
@@ -1348,7 +1381,7 @@ class MathMemoryGame {
             if (!this.isPaused) {
                 this.totalTime += 0.1;
                 // Only update display if timer should be shown
-                if (this.gameConfig.isTimerShown()) {
+                if (this.gameConfig.isTimerShown(this.showTimer)) {
                     totalTimerElement.textContent = `סה\"כ זמן: ${this.totalTime.toFixed(1)}s`;
                 }
             }
@@ -1415,7 +1448,7 @@ class MathMemoryGame {
     updateStatsTable() {
         const statsContainer = document.querySelector('.stats-container');
         statsContainer.innerHTML = '';
-        if (!this.gameConfig.isTimerShown()) {
+        if (!this.gameConfig.isTimerShown(this.showTimer)) {
             statsContainer.innerHTML = '<p>הטיימר כבוי - אין סטטיסטיקות זמן.</p>';
             return;
         }
@@ -1505,7 +1538,7 @@ class MathMemoryGame {
         endCharacterContainer.innerHTML = `<img src="${this.characterImages[this.currentCharacter]}" alt="Disney Character">`;
         // Show total time only if timer is configured to be shown
         const endTotalTimeElement = document.getElementById('endTotalTime');
-        if (this.gameConfig.isTimerShown()) {
+        if (this.gameConfig.isTimerShown(this.showTimer)) {
             endTotalTimeElement.textContent = `סה\"כ זמן: ${this.totalTime.toFixed(1)} שניות`;
             endTotalTimeElement.style.display = 'block';
         } else {
@@ -1513,9 +1546,17 @@ class MathMemoryGame {
         }
         // Find 5 slowest exercises from this session (for math exercises)
         const slowestExercisesDiv = document.getElementById('slowestExercises');
-        if (!this.gameConfig.isTimerShown()) {
-            slowestExercisesDiv.innerHTML = '<p>הטיימר כבוי - אין תרגילים איטיים.</p>';
+        const slowestExercisesHeading = endScreen.querySelector('h3'); // Get the heading before slowestExercises div
+        
+        if (!this.gameConfig.isTimerShown(this.showTimer)) {
+            // Hide both the heading and the content when timer is off
+            slowestExercisesHeading.style.display = 'none';
+            slowestExercisesDiv.style.display = 'none';
         } else {
+            // Show both the heading and the content when timer is on
+            slowestExercisesHeading.style.display = 'block';
+            slowestExercisesDiv.style.display = 'block';
+            
             let sessionExercises = [];
             if (this.gameConfig.config.type === 'math') {
                 sessionExercises = this.exercises
