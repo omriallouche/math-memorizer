@@ -7,17 +7,17 @@ game:
     English_Sound_Words:
       name: "צלילי אנגלית"
   multipleChoice:
-    enabled: false
+    enabled: true
     checked: true
     choiceCount: 4
   scoring:
     trackTime: true
     trackAccuracy: true
-  exerciseCount: 100
+  exerciseCount: 30
   # Grid dimensions for the overlay (rows x cols)
   grid:
-    rows: 4
-    cols: 5
+    rows: 5
+    cols: 6
   content:
     - answer: "Dog דוֹג"
       choices:
