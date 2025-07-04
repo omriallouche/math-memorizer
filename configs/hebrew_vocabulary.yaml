@@ -348,12 +348,6 @@ game:
         - "פְּרָחִים"
       question: "עָלְוָה"
       category: "Hebrew_Advanced_Vocabulary"
-    - answer: "נֶעֱלַם"
-      choices:
-        - "הוֹפִיעַ"
-        - "בָּלַט"
-        - "זָרַח"
-      question: "הֶעָלֵם"
       category: "Hebrew_Advanced_Vocabulary"
     - answer: "חֹשֶׁךְ כָּבֵד"
       choices:
@@ -389,13 +383,6 @@ game:
         - "עַרְמוּמִי"
         - "מְפֻתָּל"
       question: "יָשָׁר"
-      category: "Hebrew_Advanced_Vocabulary"
-    - answer: "עוֹמֵד עַל דַּעְתּוֹ"
-      choices:
-        - "גָּמִישׁ"
-        - "וַתְרָן"
-        - "פָּתוּחַ"
-      question: "עַקְשָׁן"
       category: "Hebrew_Advanced_Vocabulary"
     - answer: "צָנוּעַ"
       choices:
