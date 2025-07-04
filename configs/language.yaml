@@ -19,11 +19,11 @@ game:
     food:
       name: "אוכל"
       enabled: true
-  exerciseCount: 15
+  exerciseCount: 30
   # Grid dimensions for the overlay (rows x cols)
   grid:
-    rows: 4
-    cols: 5
+    rows: 5
+    cols: 6
   multipleChoice:
     enabled: true
     checked: true
