@@ -1011,6 +1011,42 @@ class MathMemoryGame {
         document.getElementById('statsScreen').style.display = 'none';
         document.getElementById('userManagement').style.display = 'none';
         document.getElementById('tutorialScreen').style.display = 'block';
+
+        // Render dynamic instructions from YAML config as HTML
+        const tutorialContent = document.getElementById('tutorialContent');
+        let markdown = '';
+        if (this.gameConfig && this.gameConfig.config && this.gameConfig.config.instructions) {
+            markdown = this.gameConfig.config.instructions;
+        } else {
+            markdown = 'No instructions available.';
+        }
+        tutorialContent.innerHTML = this.markdownToHtml(markdown);
+    }
+
+    // Minimal markdown to HTML converter for basic formatting
+    markdownToHtml(md) {
+        if (!md) return '';
+        let html = md;
+        // Headers
+        html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+        html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+        html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
+        // Ordered lists
+        html = html.replace(/^(\d+)\. (.*)$/gm, '<li>$2</li>');
+        html = html.replace(/(<li>.*<\/li>\s*)+/gm, function(match) {
+            return '<ol>' + match.replace(/\n/g, '') + '</ol>';
+        });
+        // Unordered lists
+        html = html.replace(/^\s*[-*] (.*)$/gm, '<li>$1</li>');
+        html = html.replace(/(<li>.*<\/li>\s*)+/gm, function(match) {
+            return '<ul>' + match.replace(/\n/g, '') + '</ul>';
+        });
+        // Paragraphs (lines not already wrapped)
+        html = html.replace(/^(?!<h\d>|<ul>|<ol>|<li>|<\/ul>|<\/ol>|<\/li>)([^\n]+)$/gm, '<p>$1</p>');
+        // Remove multiple ul/ol wrappers
+        html = html.replace(/(<\/ul>)(<ul>)/g, '');
+        html = html.replace(/(<\/ol>)(<ol>)/g, '');
+        return html;
     }
 
     hideTutorial() {
