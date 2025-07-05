@@ -687,18 +687,12 @@ class MathMemoryGame {
         const gameTypeSelect = document.getElementById('gameTypeSelect');
         if (!gameTypeSelect) return;
         gameTypeSelect.innerHTML = '';
-        const gameTypes = [
-            { value: 'math', label: 'מתמטיקה' },
-            { value: 'language', label: 'שפה' },
-            { value: 'gifted', label: 'מחוננים' },
-            { value: 'english_sounds', label: 'צלילי אנגלית' },
-            { value: 'hebrew_vocabulary', label: 'אוצר מילים' }
-        ];
-        gameTypes.forEach(game => {
+        const games = window.availableGames || [];
+        games.forEach(game => {
             const option = document.createElement('option');
-            option.value = game.value;
-            option.textContent = game.label;
-            if (this.gameConfig.gameType === game.value) {
+            option.value = game.type;
+            option.textContent = game.name;
+            if (this.gameConfig.gameType === game.type) {
                 option.selected = true;
             }
             gameTypeSelect.appendChild(option);
@@ -1644,6 +1638,20 @@ class MathMemoryGame {
 }
 
 // Initialize game when page loads
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
+    // Fetch available games from the server
+    const response = await fetch('/list-games');
+    const games = await response.json();
+    window.availableGames = games; // Store globally for later use
+    // Populate the game type select
+    const gameTypeSelect = document.getElementById('gameTypeSelect');
+    gameTypeSelect.innerHTML = '';
+    games.forEach(game => {
+        const option = document.createElement('option');
+        option.value = game.type;
+        option.textContent = game.name;
+        gameTypeSelect.appendChild(option);
+    });
+    // Initialize the game after game types are loaded
     new MathMemoryGame();
 }); 

@@ -25,6 +25,41 @@ app.get('/list-images', (req, res) => {
     });
 });
 
+// Endpoint to list available games (YAML configs)
+app.get('/list-games', (req, res) => {
+    const configsDir = path.join(__dirname, 'configs');
+    fs.readdir(configsDir, async (err, files) => {
+        if (err) {
+            console.error('Error reading configs directory:', err);
+            res.status(500).json({ error: 'Failed to read configs directory' });
+            return;
+        }
+        // Filter for YAML files only
+        const yamlFiles = files.filter(file => file.toLowerCase().endsWith('.yaml'));
+        // Try to extract display name from each YAML file (if possible)
+        const games = await Promise.all(yamlFiles.map(async file => {
+            const filePath = path.join(configsDir, file);
+            let displayName = file.replace(/\.yaml$/i, '');
+            try {
+                const content = fs.readFileSync(filePath, 'utf8');
+                // Try to extract the 'name' field from the YAML (first occurrence)
+                const match = content.match(/name:\s*['"]?([^\n'"]+)/);
+                if (match && match[1]) {
+                    displayName = match[1].trim();
+                }
+            } catch (e) {
+                // Ignore errors, fallback to filename
+            }
+            return {
+                type: file.replace(/\.yaml$/i, ''),
+                name: displayName,
+                config: `configs/${file}`
+            };
+        }));
+        res.json(games);
+    });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
