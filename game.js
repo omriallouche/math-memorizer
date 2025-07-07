@@ -10,6 +10,9 @@ class GameConfig {
     async loadYamlConfig(filePath) {
         try {
             const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const yamlText = await response.text();
             return jsyaml.load(yamlText);
         } catch (error) {
@@ -1639,19 +1642,37 @@ class MathMemoryGame {
 
 // Initialize game when page loads
 window.addEventListener('load', async () => {
-    // Fetch available games from the server
-    const response = await fetch('/list-games');
-    const games = await response.json();
-    window.availableGames = games; // Store globally for later use
-    // Populate the game type select
-    const gameTypeSelect = document.getElementById('gameTypeSelect');
-    gameTypeSelect.innerHTML = '';
-    games.forEach(game => {
-        const option = document.createElement('option');
-        option.value = game.type;
-        option.textContent = game.name;
-        gameTypeSelect.appendChild(option);
-    });
-    // Initialize the game after game types are loaded
-    new MathMemoryGame();
+    try {
+        // Fetch available games from the server
+        const response = await fetch('/list-games');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const games = await response.json();
+        window.availableGames = games; // Store globally for later use
+        // Populate the game type select
+        const gameTypeSelect = document.getElementById('gameTypeSelect');
+        gameTypeSelect.innerHTML = '';
+        games.forEach(game => {
+            const option = document.createElement('option');
+            option.value = game.type;
+            option.textContent = game.name;
+            gameTypeSelect.appendChild(option);
+        });
+        // Initialize the game after game types are loaded
+        new MathMemoryGame();
+    } catch (error) {
+        console.error('Error loading games from server:', error);
+        // Fallback: create a basic game type select with default options
+        const gameTypeSelect = document.getElementById('gameTypeSelect');
+        gameTypeSelect.innerHTML = `
+            <option value="math">מתמטיקה</option>
+            <option value="hebrew_vocabulary">אוצר מילים עברית</option>
+            <option value="gifted">מחוננים</option>
+            <option value="language">שפה</option>
+            <option value="english_sounds">צלילי אנגלית</option>
+        `;
+        // Initialize the game with fallback options
+        new MathMemoryGame();
+    }
 }); 

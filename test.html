@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Test</title>
+</head>
+<body>
+    <h1>Server Test</h1>
+    <button onclick="testListGames()">Test /list-games</button>
+    <button onclick="testListImages()">Test /list-images</button>
+    <div id="results"></div>
+
+    <script>
+        async function testListGames() {
+            try {
+                const response = await fetch('/list-games');
+                const data = await response.json();
+                document.getElementById('results').innerHTML = 
+                    '<h3>List Games Response:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = 
+                    '<h3>Error:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+
+        async function testListImages() {
+            try {
+                const response = await fetch('/list-images');
+                const data = await response.json();
+                document.getElementById('results').innerHTML = 
+                    '<h3>List Images Response:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = 
+                    '<h3>Error:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+    </script>
+</body>
+</html> 
