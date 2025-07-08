@@ -48,8 +48,15 @@ app.get('/list-games', (req, res) => {
     const configsDir = path.join(__dirname, 'configs');
     fs.readdir(configsDir, async (err, files) => {
         if (err) {
-            console.error('Error reading configs directory:', err);
-            res.status(500).json({ error: 'Failed to read configs directory' });
+            // Fallback: serve static JSON file
+            try {
+                const fallback = fs.readFileSync(path.join(configsDir, 'list-games.json'), 'utf8');
+                res.setHeader('Content-Type', 'application/json');
+                res.send(fallback);
+            } catch (e) {
+                console.error('Error reading fallback list-games.json:', e);
+                res.status(500).json({ error: 'Failed to read configs directory and fallback file' });
+            }
             return;
         }
         // Filter for YAML files only
@@ -74,6 +81,18 @@ app.get('/list-games', (req, res) => {
                 config: `configs/${file}`
             };
         }));
+        if (!games || games.length === 0) {
+            // Fallback: serve static JSON file
+            try {
+                const fallback = fs.readFileSync(path.join(configsDir, 'list-games.json'), 'utf8');
+                res.setHeader('Content-Type', 'application/json');
+                res.send(fallback);
+            } catch (e) {
+                console.error('Error reading fallback list-games.json:', e);
+                res.status(500).json({ error: 'No games found and failed to read fallback file' });
+            }
+            return;
+        }
         res.json(games);
     });
 });
