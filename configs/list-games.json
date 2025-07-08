@@ -1,0 +1,7 @@
+[
+  { "type": "math", "name": "מתמטיקה" },
+  { "type": "hebrew_vocabulary", "name": "אוצר מילים עברית" },
+  { "type": "gifted", "name": "מחוננים" },
+  { "type": "language", "name": "שפה" },
+  { "type": "english_sounds", "name": "צלילי אנגלית" }
+] 
