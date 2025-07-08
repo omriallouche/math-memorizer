@@ -352,7 +352,7 @@ class MathMemoryGame {
 
     async loadImages() {
         try {
-            const response = await fetch('/list-images');
+            const response = await fetch('/math-memorizer/list-images');
             if (!response.ok) {
                 throw new Error(`Server responded with status: ${response.status}`);
             }
@@ -1644,7 +1644,7 @@ class MathMemoryGame {
 window.addEventListener('load', async () => {
     try {
         // Fetch available games from the server
-        const response = await fetch('/list-games');
+        const response = await fetch('/math-memorizer/list-games');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
