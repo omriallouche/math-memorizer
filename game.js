@@ -7,16 +7,28 @@ class GameConfig {
         // Config is now loaded asynchronously in MathMemoryGame.initGame()
     }
 
-    async loadYamlConfig(filePath) {
+    async loadYamlConfig(filePath, fallbackJsonPath = null, fallbackMinimal = null) {
         try {
             const response = await fetch(filePath);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error('YAML fetch failed');
             const yamlText = await response.text();
             return jsyaml.load(yamlText);
         } catch (error) {
             console.error('Error loading or parsing YAML file:', error);
+            // Try static JSON fallback
+            if (fallbackJsonPath) {
+                try {
+                    const response = await fetch(fallbackJsonPath);
+                    if (!response.ok) throw new Error('JSON fallback fetch failed');
+                    return await response.json();
+                } catch (e) {
+                    console.error('Error loading JSON fallback:', e);
+                }
+            }
+            // Fallback to minimal config
+            if (fallbackMinimal) {
+                return fallbackMinimal;
+            }
             return null;
         }
     }
@@ -24,33 +36,30 @@ class GameConfig {
     async setGameType(type) {
         this.gameType = type;
         const configMap = {
-            'math': { path: 'configs/math.yaml', key: 'game' },
-            'hebrew_vocabulary': { path: 'configs/hebrew_vocabulary.yaml', key: 'game' },
-            'gifted': { path: 'configs/gifted_youth_math.yaml', key: 'game' },
-            'language': { path: 'configs/language.yaml', key: 'game' },
-            'english_sounds': { path: 'configs/english_sounds.yaml', key: 'game' }
+            'math': { path: 'configs/math.yaml', key: 'game', fallbackJson: 'configs/math.json', fallbackMinimal: { game: { name: 'מתמטיקה', type: 'math', operations: { addition: { enabled: true, symbol: '+', name: 'חיבור' }, subtraction: { enabled: true, symbol: '-', name: 'חיסור' }, multiplication: { enabled: false, symbol: '×', name: 'כפל' }, division: { enabled: false, symbol: '÷', name: 'חילוק' } }, categories: {}, multipleChoice: { enabled: true, checked: false, choiceCount: 4, constraints: { nonNegative: true, maxValue: 100 } }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } } },
+            'hebrew_vocabulary': { path: 'configs/hebrew_vocabulary.yaml', key: 'game', fallbackJson: 'configs/hebrew_vocabulary.json', fallbackMinimal: { game: { name: 'אוצר מילים עברית', type: 'language', categories: {}, content: [], multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } } },
+            'gifted': { path: 'configs/gifted_youth_math.yaml', key: 'game', fallbackJson: 'configs/gifted_youth_math.json', fallbackMinimal: { game: { name: 'מחוננים', type: 'gifted', categories: {}, content: [], multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } } },
+            'language': { path: 'configs/language.yaml', key: 'game', fallbackJson: 'configs/language.json', fallbackMinimal: { game: { name: 'שפה', type: 'language', categories: {}, content: [], multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } } },
+            'english_sounds': { path: 'configs/english_sounds.yaml', key: 'game', fallbackJson: 'configs/english_sounds.json', fallbackMinimal: { game: { name: 'צלילי אנגלית', type: 'multiple_choice', categories: {}, content: [], multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } } }
         };
 
         const configInfo = configMap[type];
 
         if (configInfo) {
-            const { path, key } = configInfo;
+            const { path, key, fallbackJson, fallbackMinimal } = configInfo;
             try {
-                const loadedConfig = await this.loadYamlConfig(path);
+                const loadedConfig = await this.loadYamlConfig(path, fallbackJson, fallbackMinimal);
                 if (loadedConfig && loadedConfig[key]) {
                     this.config = loadedConfig[key];
-                    // this.config.type = type; // Always set to the selected type
-                    // Set exerciseCount from config, fallback to 20
                     this.config.exerciseCount = this.config.exerciseCount || 20;
-                    // Set grid dimensions from config, fallback to 5x4
                     this.config.grid = this.config.grid || { rows: 4, cols: 5 };
                 } else {
                     console.error(`Failed to load or parse config for type: ${type} from ${path}`);
-                    this.config = { exerciseCount: 20, grid: { rows: 4, cols: 5 } };
+                    this.config = fallbackMinimal ? fallbackMinimal[key] : { exerciseCount: 20, grid: { rows: 4, cols: 5 } };
                 }
             } catch (error) {
                 console.error(`Error during config loading for type ${type}:`, error);
-                this.config = { exerciseCount: 20, grid: { rows: 4, cols: 5 } };
+                this.config = fallbackMinimal ? fallbackMinimal[key] : { exerciseCount: 20, grid: { rows: 4, cols: 5 } };
             }
         } else {
             console.warn(`Unknown game type: "${type}". Defaulting to math.`);
@@ -364,112 +373,15 @@ class MathMemoryGame {
             this.currentCharacter = Math.floor(Math.random() * this.characterImages.length);
         } catch (error) {
             console.error('Error loading images:', error);
-            console.log('Falling back to default images. Make sure the server is running with "npm start"');
-            // Fallback to default images if server request fails
-            this.characterImages = [
-                'images/character1.jpg',
-                'images/character2.jpg',
-                'images/character3.jpg',
-                'images/character4.jpg',
-                'images/character5.jpg',
-                'images/character6.jpg',
-                'images/character7.jpg',
-                'images/character8.jpg',
-                'images/character9.jpg',
-                'images/character10.jpg',
-                'images/character11.jpg',
-                'images/character12.jpg',
-                'images/character13.jpg',
-                'images/character14.jpg',
-                'images/character15.jpg',
-                'images/character16.jpg',
-                'images/character17.jpg',
-                'images/character18.jpg',
-                'images/character19.jpg',
-                'images/character20.jpg',
-                'images/character21.jpg',
-                'images/character22.jpg',
-                'images/character23.jpg',
-                'images/character24.jpg',
-                'images/character25.jpg',
-                'images/character26.jpg',
-                'images/character27.jpg',
-                'images/character28.jpg',
-                'images/character29.jpg',
-                'images/character30.jpg',
-                'images/character31.jpg',
-                'images/character32.jpg',
-                'images/character33.jpg',
-                'images/character34.jpg',
-                'images/character35.jpg',
-                'images/character36.jpg',
-                'images/character37.jpg',
-                'images/character38.jpg',
-                'images/character39.jpg',
-                'images/character40.jpg',
-                'images/character41.jpg',
-                'images/character42.jpg',
-                'images/character43.jpg',
-                'images/character44.jpg',
-                'images/character45.jpg',
-                'images/character46.jpg',
-                'images/character47.jpg',
-                'images/character48.jpg',
-                'images/character49.jpg',
-                'images/character50.jpg',
-                'images/character51.jpg',
-                'images/character52.jpg',
-                'images/character53.jpg',
-                'images/character54.jpg',
-                'images/character55.jpg',
-                'images/character56.jpg',
-                'images/character57.jpg',
-                'images/character58.jpg',
-                'images/character59.jpg',
-                'images/character60.jpg',
-                'images/character61.jpg',
-                'images/character62.jpg',
-                'images/character63.jpg',
-                'images/character64.jpg',
-                'images/character65.jpg',
-                'images/character66.jpg',
-                'images/character67.jpg',
-                'images/character68.jpg',
-                'images/character69.jpg',
-                'images/character70.jpg',
-                'images/character71.jpg',
-                'images/character72.jpg',
-                'images/character73.jpg',
-                'images/character74.jpg',
-                'images/character75.jpg',
-                'images/character76.jpg',
-                'images/character77.jpg',
-                'images/character78.jpg',
-                'images/character79.jpg',
-                'images/character80.jpg',
-                'images/character81.jpg',
-                'images/character82.jpg',
-                'images/character83.jpg',
-                'images/character84.jpg',
-                'images/character85.jpg',
-                'images/character86.jpg',
-                'images/character87.jpg',
-                'images/character88.jpg',
-                'images/character89.jpg',
-                'images/character90.jpg',
-                'images/character91.jpg',
-                'images/character92.jpg',
-                'images/character93.jpg',
-                'images/character94.jpg',
-                'images/character95.jpg',
-                'images/character96.jpg',
-                'images/character97.jpg',
-                'images/character98.jpg',
-                'images/character99.jpg',
-                'images/character100.jpg',
-                'images/character101.jpg'                
-            ];
-            this.currentCharacter = Math.floor(Math.random() * this.characterImages.length);
+            // Fallback to static listing of images directory
+            try {
+                // List all images from 1 to 101
+                this.characterImages = Array.from({length: 101}, (_, i) => `images/character${i+1}.jpg`);
+                this.currentCharacter = Math.floor(Math.random() * this.characterImages.length);
+            } catch (e) {
+                console.error('Fallback image listing failed:', e);
+                this.characterImages = [];
+            }
         }
     }
 
@@ -1644,11 +1556,16 @@ class MathMemoryGame {
 window.addEventListener('load', async () => {
     try {
         // Fetch available games from the server
-        const response = await fetch('/math-memorizer/list-games');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        let games;
+        try {
+            const response = await fetch('/math-memorizer/list-games');
+            if (!response.ok) throw new Error('Not OK');
+            games = await response.json();
+        } catch (e) {
+            // Fallback to static JSON file
+            const response = await fetch('configs/list-games.json');
+            games = await response.json();
         }
-        const games = await response.json();
         window.availableGames = games; // Store globally for later use
         // Populate the game type select
         const gameTypeSelect = document.getElementById('gameTypeSelect');
@@ -1662,7 +1579,7 @@ window.addEventListener('load', async () => {
         // Initialize the game after game types are loaded
         new MathMemoryGame();
     } catch (error) {
-        console.error('Error loading games from server:', error);
+        console.error('Error loading games from server or static file:', error);
         // Fallback: create a basic game type select with default options
         const gameTypeSelect = document.getElementById('gameTypeSelect');
         gameTypeSelect.innerHTML = `
