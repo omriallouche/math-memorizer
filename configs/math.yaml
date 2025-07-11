@@ -1,6 +1,6 @@
 game:
   type: "math"
-  name: "משחק זיכרון מתמטי"
+  name: "חשבון"
   description: "תרגול פעולות חשבון"
   showTimer: true
   operations:
@@ -23,11 +23,11 @@ game:
   numberRange:
     min: 1
     max: 20
-  exerciseCount: 25
+  exerciseCount: 30
   # Grid dimensions for the overlay (rows x cols)
   grid:
     rows: 5
-    cols: 5
+    cols: 6
   multipleChoice:
     enabled: true
     checked: false

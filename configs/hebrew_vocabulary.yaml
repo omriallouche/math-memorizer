@@ -1,6 +1,6 @@
 game:
   type: "multiple_choice"
-  name: "אוצר מילים למתקדמים"
+  name: "אוצר מילים"
   description: "הרחבת אוצר המילים בעברית"
   showTimer: false
   categories:

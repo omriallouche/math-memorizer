@@ -1,6 +1,6 @@
 game:
   type: "language"
-  name: "משחק שפה"
+  name: "אנגלית"
   description: "תרגול אנגלית"
   showTimer: true
   categories:
