@@ -680,4 +680,28 @@ select {
     display: block;
     margin: 0 auto 1rem auto;
     object-fit: contain;
+}
+
+/* Error report styling */
+.error-report {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #fff3f3;
+    border: 2px solid #ffcdd2;
+    border-radius: 10px;
+}
+
+.error-report h3 {
+    color: #d32f2f;
+    margin-bottom: 1rem;
+}
+
+.error-report .exercise-item {
+    color: #d32f2f;
+    font-weight: bold;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    background-color: #ffebee;
+    border-radius: 5px;
+    border-left: 4px solid #d32f2f;
 } 

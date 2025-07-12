@@ -3,6 +3,7 @@ game:
   name: "אוצר מילים"
   description: "הרחבת אוצר המילים בעברית"
   showTimer: false
+  direction: "rtl"
   categories:
     Hebrew_Advanced_Vocabulary:
       name: "מילים למתקדמים"

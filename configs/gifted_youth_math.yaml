@@ -3,6 +3,7 @@ game:
   name: "מחוננים"
   description: "תרגול כמותי למבחן מחוננים"
   showTimer: true
+  direction: "rtl"
   categories:
     One_Step_Arithmetic_Word_Problems:
       name: "בעיות בצעד אחד"

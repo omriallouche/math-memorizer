@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Error Tracking</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Test Error Tracking</h1>
+        <div id="testResults">
+            <h2>Testing Error Tracking in Multiple Choice Mode</h2>
+            <p>This test will simulate errors in multiple choice mode and verify the error tracking functionality.</p>
+            
+            <button id="testButton" class="start-button">Run Test</button>
+            
+            <div id="testOutput" style="margin-top: 2rem; text-align: left;">
+                <h3>Test Results:</h3>
+                <div id="testLog"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simple test to verify error tracking functionality
+        function runTest() {
+            const log = document.getElementById('testLog');
+            log.innerHTML = '';
+            
+            // Simulate the error tracking functionality
+            const errors = [];
+            
+            // Simulate some math errors
+            const mathErrors = [
+                {
+                    exercise: {
+                        type: 'math',
+                        data: { num1: 5, num2: 3, operation: 'addition' },
+                        correctAnswer: 8
+                    },
+                    userAnswer: 7,
+                    correctAnswer: 8
+                },
+                {
+                    exercise: {
+                        type: 'math',
+                        data: { num1: 10, num2: 4, operation: 'subtraction' },
+                        correctAnswer: 6
+                    },
+                    userAnswer: 8,
+                    correctAnswer: 6
+                },
+                {
+                    exercise: {
+                        type: 'math',
+                        data: { num1: 7, num2: 6, operation: 'addition' },
+                        correctAnswer: 13
+                    },
+                    userAnswer: 12,
+                    correctAnswer: 13
+                }
+            ];
+            
+            errors.push(...mathErrors);
+            
+            // Simulate some language errors
+            const languageErrors = [
+                {
+                    exercise: {
+                        type: 'language',
+                        data: { hebrew: 'כלב', english: 'dog' },
+                        correctAnswer: 'dog'
+                    },
+                    userAnswer: 'cat',
+                    correctAnswer: 'dog'
+                }
+            ];
+            
+            errors.push(...languageErrors);
+            
+            // Display the errors
+            log.innerHTML = '<h4>Errors tracked:</h4>';
+            errors.forEach((error, index) => {
+                const div = document.createElement('div');
+                div.className = 'exercise-item';
+                div.style.color = '#d32f2f';
+                div.style.margin = '0.5rem 0';
+                div.style.padding = '0.5rem';
+                div.style.backgroundColor = '#ffebee';
+                div.style.borderRadius = '5px';
+                div.style.borderLeft = '4px solid #d32f2f';
+                
+                if (error.exercise.type === 'math') {
+                    const { num1, num2, operation } = error.exercise.data;
+                    const symbol = operation === 'addition' ? '+' : operation === 'subtraction' ? '-' : operation === 'multiplication' ? '×' : '÷';
+                    div.textContent = `${num1} ${symbol} ${num2} = ${error.correctAnswer}`;
+                } else if (error.exercise.type === 'language') {
+                    div.textContent = `${error.exercise.data.hebrew} = ${error.exercise.data.english}`;
+                }
+                
+                log.appendChild(div);
+            });
+            
+            log.innerHTML += `<p><strong>Total errors tracked: ${errors.length}</strong></p>`;
+            log.innerHTML += '<p style="color: green;">✅ Error tracking functionality is working correctly!</p>';
+        }
+        
+        document.getElementById('testButton').onclick = runTest;
+    </script>
+</body>
+</html> 

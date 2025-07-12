@@ -36,7 +36,7 @@ class GameConfig {
     async setGameType(type) {
         this.gameType = type;
         const configMap = {
-            'math': { path: 'configs/math.yaml', key: 'game', fallbackJson: 'configs/math.json', fallbackMinimal: { game: { name: 'מתמטיקה', type: 'math', operations: { addition: { enabled: true, symbol: '+', name: 'חיבור' }, subtraction: { enabled: true, symbol: '-', name: 'חיסור' }, multiplication: { enabled: false, symbol: '×', name: 'כפל' }, division: { enabled: false, symbol: '÷', name: 'חילוק' } }, categories: {}, multipleChoice: { enabled: true, checked: false, choiceCount: 4, constraints: { nonNegative: true, maxValue: 100 } }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } } },
+            'math': { path: 'configs/math.yaml', key: 'game', fallbackJson: 'configs/math.json', fallbackMinimal: { game: { name: 'מתמטיקה', type: 'math', operations: { addition: { enabled: true, symbol: '+', name: 'חיבור' }, subtraction: { enabled: true, symbol: '-', name: 'חיסור' }, multiplication: { enabled: false, symbol: '×', name: 'כפל' }, division: { enabled: false, symbol: '÷', name: 'חילוק' } }, categories: {}, multipleChoice: { enabled: true, checked: false, choiceCount: 4, constraints: { nonNegative: true, maxValue: 100 } }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } },
             'hebrew_vocabulary': { path: 'configs/hebrew_vocabulary.yaml', key: 'game', fallbackJson: 'configs/hebrew_vocabulary.json', fallbackMinimal: { game: { name: 'אוצר מילים עברית', type: 'language', categories: {}, content: [], multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } } },
             'gifted': { path: 'configs/gifted_youth_math.yaml', key: 'game', fallbackJson: 'configs/gifted_youth_math.json', fallbackMinimal: { game: { name: 'מחוננים', type: 'gifted', categories: {}, content: [], multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } } },
             'language': { path: 'configs/language.yaml', key: 'game', fallbackJson: 'configs/language.json', fallbackMinimal: { game: { name: 'שפה', type: 'language', categories: {}, content: [], multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } } },
@@ -347,6 +347,7 @@ class MathMemoryGame {
         this.successAudio = new Audio('audio/success.mp3');
         this.successAudio.volume = 0.5; // Optional: set volume lower if needed
         this.multipleChoiceMode = false;
+        this.errors = []; // Track errors made during the game
 
         this.initGame();
     }
@@ -1175,6 +1176,7 @@ class MathMemoryGame {
         this.setupGrid();
         this.currentCharacter = Math.floor(Math.random() * this.characterImages.length);
         this.generateExercises();
+        this.errors = []; // Reset errors for new game
 
         if (this.exercises.length === 0) {
             alert('No exercises were loaded. Please check the category selection or game configuration.');
@@ -1277,6 +1279,12 @@ class MathMemoryGame {
                     } else {
                         btn.classList.add('choice-btn-wrong');
                         btn.disabled = true;
+                        // Track the error
+                        this.errors.push({
+                            exercise: exercise,
+                            userAnswer: choice,
+                            correctAnswer: exercise.correctAnswer
+                        });
                     }
                 };
                 mcContainer.appendChild(btn);
@@ -1542,6 +1550,40 @@ class MathMemoryGame {
                 slowestExercisesDiv.appendChild(div);
             });
         }
+        
+        // Show error report if there were errors in multiple choice mode
+        if (this.multipleChoiceMode && this.errors.length > 0) {
+            const errorReportDiv = document.createElement('div');
+            errorReportDiv.className = 'error-report';
+            
+            const errorReportHeading = document.createElement('h3');
+            errorReportHeading.textContent = 'תרגילים עם שגיאות:';
+            errorReportDiv.appendChild(errorReportHeading);
+            
+            const errorListDiv = document.createElement('div');
+            errorListDiv.className = 'exercise-list';
+            
+            this.errors.forEach(error => {
+                const div = document.createElement('div');
+                div.className = 'exercise-item';
+                
+                if (error.exercise.type === 'math') {
+                    const { num1, num2, operation } = error.exercise.data;
+                    const symbol = this.gameConfig.getOperationSymbol(operation);
+                    div.textContent = `${num1} ${symbol} ${num2} = ${error.correctAnswer}`;
+                } else if (error.exercise.type === 'language') {
+                    div.textContent = `${error.exercise.data.hebrew} = ${error.exercise.data.english}`;
+                } else if (error.exercise.type === 'gifted') {
+                    div.textContent = `${error.exercise.question} = ${error.exercise.correctAnswer}`;
+                }
+                
+                errorListDiv.appendChild(div);
+            });
+            
+            errorReportDiv.appendChild(errorListDiv);
+            endScreen.appendChild(errorReportDiv);
+        }
+        
         // Back to setup button (always set this up)
         document.getElementById('backToSetupButton').onclick = () => {
             endScreen.style.display = 'none';
