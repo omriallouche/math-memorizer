@@ -36,11 +36,91 @@ class GameConfig {
     async setGameType(type) {
         this.gameType = type;
         const configMap = {
-            'math': { path: 'configs/math.yaml', key: 'game', fallbackJson: 'configs/math.json', fallbackMinimal: { game: { name: 'מתמטיקה', type: 'math', operations: { addition: { enabled: true, symbol: '+', name: 'חיבור' }, subtraction: { enabled: true, symbol: '-', name: 'חיסור' }, multiplication: { enabled: false, symbol: '×', name: 'כפל' }, division: { enabled: false, symbol: '÷', name: 'חילוק' } }, categories: {}, multipleChoice: { enabled: true, checked: false, choiceCount: 4, constraints: { nonNegative: true, maxValue: 100 } }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } },
-            'hebrew_vocabulary': { path: 'configs/hebrew_vocabulary.yaml', key: 'game', fallbackJson: 'configs/hebrew_vocabulary.json', fallbackMinimal: { game: { name: 'אוצר מילים עברית', type: 'language', categories: {}, content: [], multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } } },
-            'gifted': { path: 'configs/gifted_youth_math.yaml', key: 'game', fallbackJson: 'configs/gifted_youth_math.json', fallbackMinimal: { game: { name: 'מחוננים', type: 'gifted', categories: {}, content: [], multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } } },
-            'language': { path: 'configs/language.yaml', key: 'game', fallbackJson: 'configs/language.json', fallbackMinimal: { game: { name: 'שפה', type: 'language', categories: {}, content: [], multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } } },
-            'english_sounds': { path: 'configs/english_sounds.yaml', key: 'game', fallbackJson: 'configs/english_sounds.json', fallbackMinimal: { game: { name: 'צלילי אנגלית', type: 'multiple_choice', categories: {}, content: [], multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, exerciseCount: 20, grid: { rows: 4, cols: 5 } } } }
+            'math': { 
+                path: 'configs/math.yaml', 
+                key: 'game', 
+                fallbackJson: 'configs/math.json', 
+                fallbackMinimal: { 
+                    game: { 
+                        name: 'מתמטיקה', 
+                        type: 'math', 
+                        operations: { 
+                            addition: { enabled: true, symbol: '+', name: 'חיבור' }, 
+                            subtraction: { enabled: true, symbol: '-', name: 'חיסור' }, 
+                            multiplication: { enabled: false, symbol: '×', name: 'כפל' }, 
+                            division: { enabled: false, symbol: '÷', name: 'חילוק' } 
+                        }, 
+                        categories: {}, 
+                        multipleChoice: { enabled: true, checked: false, choiceCount: 4, constraints: { nonNegative: true, maxValue: 100 } }, 
+                        exerciseCount: 30, 
+                        grid: { rows: 5, cols: 6 } 
+                    } 
+                } 
+            },
+            'hebrew_vocabulary': { 
+                path: 'configs/hebrew_vocabulary.yaml', 
+                key: 'game', 
+                fallbackJson: 'configs/hebrew_vocabulary.json', 
+                fallbackMinimal: { 
+                    game: { 
+                        name: 'אוצר מילים עברית', 
+                        type: 'language', 
+                        categories: {}, 
+                        content: [], 
+                        multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, 
+                        exerciseCount: 30, 
+                        grid: { rows: 5, cols: 6 } 
+                    } 
+                } 
+            },
+            'gifted': { 
+                path: 'configs/gifted_youth_math.yaml', 
+                key: 'game', 
+                fallbackJson: 'configs/gifted_youth_math.json', 
+                fallbackMinimal: { 
+                    game: { 
+                        name: 'מחוננים', 
+                        type: 'gifted', 
+                        categories: {}, 
+                        content: [], 
+                        multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, 
+                        exerciseCount: 25, 
+                        grid: { rows: 5, cols: 5 } 
+                    } 
+                } 
+            },
+            'language': { 
+                path: 'configs/language.yaml', 
+                key: 'game', 
+                fallbackJson: 'configs/language.json', 
+                fallbackMinimal: { 
+                    game: { 
+                        name: 'שפה', 
+                        type: 'language', 
+                        categories: {}, 
+                        content: [], 
+                        multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, 
+                        exerciseCount: 30, 
+                        grid: { rows: 5, cols: 6 } 
+                    } 
+                } 
+            },
+            'english_sounds': { 
+                path: 'configs/english_sounds.yaml', 
+                key: 'game', 
+                fallbackJson: 'configs/english_sounds.json', 
+                fallbackMinimal: { 
+                    game: { 
+                        name: 'צלילי אנגלית', 
+                        type: 'multiple_choice', 
+                        categories: {}, 
+                        content: [], 
+                        multipleChoice: { enabled: true, checked: true, choiceCount: 4 }, 
+                        exerciseCount: 30, 
+                        grid: { rows: 5, cols: 6 } 
+                    } 
+                } 
+            }
         };
 
         const configInfo = configMap[type];
@@ -110,26 +190,43 @@ class GameConfig {
 
     generateMathExercise(selectedNumbers, enabledOperations) {
         const numbers = Array.from(selectedNumbers);
-        const num1 = numbers[Math.floor(Math.random() * numbers.length)];
-        const num2 = numbers[Math.floor(Math.random() * numbers.length)];
         const operation = enabledOperations[Math.floor(Math.random() * enabledOperations.length)];
         
-        let result;
+        let num1, num2, result;
         switch (operation) {
             case 'addition':
+                num1 = numbers[Math.floor(Math.random() * numbers.length)];
+                num2 = numbers[Math.floor(Math.random() * numbers.length)];
                 result = num1 + num2;
                 break;
             case 'subtraction':
+                num1 = numbers[Math.floor(Math.random() * numbers.length)];
+                num2 = numbers[Math.floor(Math.random() * numbers.length)];
                 if (num1 < num2) return this.generateMathExercise(selectedNumbers, enabledOperations);
                 result = num1 - num2;
                 break;
             case 'multiplication':
+                num1 = numbers[Math.floor(Math.random() * numbers.length)];
+                num2 = numbers[Math.floor(Math.random() * numbers.length)];
                 result = num1 * num2;
                 break;
             case 'division':
-                if (num2 === 0) return this.generateMathExercise(selectedNumbers, enabledOperations);
-                result = num1 / num2;
-                if (result > 20 || !Number.isInteger(result)) {
+                // For division, choose answer and denominator from selected range
+                // Then calculate numerator to be outside the range
+                const answer = numbers[Math.floor(Math.random() * numbers.length)];
+                const denominator = numbers[Math.floor(Math.random() * numbers.length)];
+                if (denominator === 0) return this.generateMathExercise(selectedNumbers, enabledOperations);
+                
+                // Calculate numerator as answer × denominator
+                num1 = answer * denominator;
+                num2 = denominator;
+                result = answer;
+                
+                // Ensure numerator is outside the selected range
+                const minSelected = Math.min(...numbers);
+                const maxSelected = Math.max(...numbers);
+                if (num1 >= minSelected && num1 <= maxSelected) {
+                    // If numerator is in range, try again
                     return this.generateMathExercise(selectedNumbers, enabledOperations);
                 }
                 break;
@@ -222,9 +319,21 @@ class GameConfig {
         while (choices.length < this.config.multipleChoice.choiceCount) {
             let wrong;
             if (exerciseData.operation === 'division') {
-                wrong = correctAnswer + (Math.floor(Math.random() * 7) - 3);
+                // For division, generate wrong answers that are reasonable
+                // Try different approaches to generate wrong answers
+                const approaches = [
+                    () => correctAnswer + (Math.floor(Math.random() * 5) - 2), // Small offset
+                    () => correctAnswer * (Math.floor(Math.random() * 3) + 1), // Multiples
+                    () => Math.floor(correctAnswer / 2), // Half
+                    () => correctAnswer * 2, // Double
+                    () => Math.floor(Math.random() * 20) + 1 // Random in range
+                ];
+                
+                const approach = approaches[Math.floor(Math.random() * approaches.length)];
+                wrong = approach();
+                
+                // Ensure wrong answer is valid
                 if (wrong === correctAnswer || wrong <= 0 || wrong > 20) continue;
-                if (exerciseData.num1 % wrong !== 0) continue;
             } else {
                 wrong = correctAnswer + (Math.floor(Math.random() * 11) - 5);
                 if (wrong === correctAnswer || 
