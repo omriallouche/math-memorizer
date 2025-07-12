@@ -3,6 +3,7 @@ game:
   name: "חשבון"
   description: "תרגול פעולות חשבון"
   showTimer: true
+  direction: "ltr"
   operations:
     addition:
       symbol: "+"

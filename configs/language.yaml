@@ -3,6 +3,7 @@ game:
   name: "אנגלית"
   description: "תרגול אנגלית"
   showTimer: true
+  direction: "rtl"
   categories:
     animals:
       name: "חיות"

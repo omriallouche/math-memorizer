@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Direction Attribute</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .exercise {
+            font-size: 2rem;
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px solid #4ecdc4;
+            border-radius: 5px;
+        }
+        .choice-btn {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .exercise-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Direction Attribute Implementation</h1>
+    
+    <div class="test-container">
+        <h2>Test 1: LTR Direction (Math)</h2>
+        <div class="exercise" style="direction: ltr;">5 + 3 = ?</div>
+        <div style="direction: ltr;">
+            <button class="choice-btn">6</button>
+            <button class="choice-btn">7</button>
+            <button class="choice-btn">8</button>
+            <button class="choice-btn">9</button>
+        </div>
+        <div class="exercise-item" style="direction: ltr;">5 + 3 = 8 (2.1s)</div>
+    </div>
+
+    <div class="test-container">
+        <h2>Test 2: RTL Direction (Hebrew Vocabulary)</h2>
+        <div class="exercise" style="direction: rtl;">תִּחּוּם</div>
+        <div style="direction: rtl;">
+            <button class="choice-btn">פְּרִיצָה</button>
+            <button class="choice-btn">אִחוּד</button>
+            <button class="choice-btn">קְבִיעַת גְּבוּלוֹת</button>
+            <button class="choice-btn">טִשְׁטוּשׁ</button>
+        </div>
+        <div class="exercise-item" style="direction: rtl;">תִּחּוּם = קְבִיעַת גְּבוּלוֹת (3.2s)</div>
+    </div>
+
+    <div class="test-container">
+        <h2>Test 3: Mixed Content (English Sounds)</h2>
+        <div class="exercise" style="direction: rtl;">כֶּלֶב</div>
+        <div style="direction: rtl;">
+            <button class="choice-btn">Cat קַט</button>
+            <button class="choice-btn">Dog דוֹג</button>
+            <button class="choice-btn">Horse הוֹרְס</button>
+            <button class="choice-btn">Cow קוֹאוּ</button>
+        </div>
+        <div class="exercise-item" style="direction: rtl;">כֶּלֶב = Dog דוֹג (1.8s)</div>
+    </div>
+
+    <script>
+        // Test that the direction attribute is being read correctly
+        console.log("Direction attribute test loaded");
+        
+        // Simulate the game's direction reading logic
+        const testConfigs = [
+            { direction: "ltr" },
+            { direction: "rtl" },
+            { direction: "rtl" }
+        ];
+        
+        testConfigs.forEach((config, index) => {
+            const direction = config.direction || 'ltr';
+            console.log(`Config ${index + 1} direction: ${direction}`);
+        });
+    </script>
+</body>
+</html> 

@@ -3,6 +3,7 @@ game:
   name: "צלילי אנגלית"
   description: "תרגול זיהוי מילות אנגלית לפי צליל"
   showTimer: false
+  direction: "rtl"
   categories:
     English_Sound_Words:
       name: "צלילי אנגלית"

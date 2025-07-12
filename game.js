@@ -1235,6 +1235,10 @@ class MathMemoryGame {
         function isImagePath(val) {
             return typeof val === 'string' && val.match(/\.(jpg|jpeg|png|gif|bmp|svg)$/i);
         }
+        
+        // Get direction from config, default to 'ltr' if not specified
+        const direction = this.gameConfig.config.direction || 'ltr';
+        
         // Display the question
         let questionContent = '';
         if (isImagePath(exercise.question)) {
@@ -1244,11 +1248,14 @@ class MathMemoryGame {
         }
         // For english_sounds, add a subtitle for clarity
         if (this.gameConfig.config.type === 'english_sounds') {
-            questionContent = `<div style='font-size:2.5rem;'>${questionContent}</div><div style='font-size:1.2rem;color:#888;'>בחר את המילה באנגלית המתאימה</div>`;
+            questionContent = `<div style='font-size:2.5rem;direction:${direction};'>${questionContent}</div><div style='font-size:1.2rem;color:#888;direction:${direction};'>בחר את המילה באנגלית המתאימה</div>`;
             document.getElementById('exercise').innerHTML = questionContent;
         } else {
             document.getElementById('exercise').innerHTML = questionContent;
         }
+        
+        // Apply direction to the exercise element
+        document.getElementById('exercise').style.direction = direction;
         document.getElementById('progressText').textContent = 
             `${this.currentExercise + 1}/${this.gameConfig.config.exerciseCount}`;
         document.querySelector('.progress-bar').style.width = 
@@ -1261,6 +1268,8 @@ class MathMemoryGame {
         if (this.multipleChoiceMode) {
             // Hide next button
             nextBtn.style.display = 'none';
+            // Apply direction to multiple choice container
+            mcContainer.style.direction = direction;
             // Generate choices using game config
             const choices = this.gameConfig.generateChoices(exercise.correctAnswer, exercise.data);
             // Render buttons
@@ -1268,6 +1277,7 @@ class MathMemoryGame {
             choices.forEach(choice => {
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
+                btn.style.direction = direction;
                 if (isImagePath(choice)) {
                     btn.innerHTML = `<img src="${choice}" class="exercise-image" alt="אפשרות">`;
                 } else {
@@ -1539,9 +1549,12 @@ class MathMemoryGame {
             // Sort by time descending, take 5
             const slowest = sessionExercises.sort((a, b) => b.time - a.time).slice(0, 5);
             slowestExercisesDiv.innerHTML = '';
+            // Get direction from config for slowest exercises
+            const direction = this.gameConfig.config.direction || 'ltr';
             slowest.forEach((exercise) => {
                 const div = document.createElement('div');
                 div.className = 'exercise-item';
+                div.style.direction = direction;
                 if (exercise.type === 'math') {
                     div.textContent = `${exercise.question} (${(exercise.time/1000).toFixed(1)}s)`;
                 } else if (exercise.type === 'language') {
@@ -1556,6 +1569,9 @@ class MathMemoryGame {
             const errorReportDiv = document.createElement('div');
             errorReportDiv.className = 'error-report';
             
+            // Get direction from config for error report
+            const direction = this.gameConfig.config.direction || 'ltr';
+            
             const errorReportHeading = document.createElement('h3');
             errorReportHeading.textContent = 'תרגילים עם שגיאות:';
             errorReportDiv.appendChild(errorReportHeading);
@@ -1566,6 +1582,7 @@ class MathMemoryGame {
             this.errors.forEach(error => {
                 const div = document.createElement('div');
                 div.className = 'exercise-item';
+                div.style.direction = direction;
                 
                 if (error.exercise.type === 'math') {
                     const { num1, num2, operation } = error.exercise.data;
