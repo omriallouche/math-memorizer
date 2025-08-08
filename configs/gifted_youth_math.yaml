@@ -3,7 +3,7 @@ game:
   name: "מחוננים"
   description: "תרגול כמותי למבחן מחוננים"
   showTimer: true
-  direction: "rtl"
+  direction: "ltr"
   categories:
     One_Step_Arithmetic_Word_Problems:
       name: "בעיות בצעד אחד"
@@ -219,7 +219,7 @@ game:
       - "33"
       - "30"
     category: "Multi_Step_Arithmetic_Word_Problems - Multiplication"
-  - question: "רכבת נסעה 90 ק״מ בשעה. אחרי שעה עצרה 15 דקות ואז נסעה עוד 60 ק״מ. כמה ק״m נסעה הרכבת?"
+  - question: "רכבת נסעה 90 ק״מ בשעה. אחרי שעה עצרה 15 דקות ואז נסעה עוד 60 ק״מ. כמה ק״מ נסעה הרכבת?"
     answer: "150"
     choices:
       - "90"
