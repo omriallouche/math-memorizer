@@ -120,6 +120,21 @@ class GameConfig {
                         grid: { rows: 5, cols: 6 } 
                     } 
                 } 
+            },
+            'cards_match': {
+                path: 'configs/cards_match.yaml',
+                key: 'game',
+                fallbackJson: 'configs/cards_match.json',
+                fallbackMinimal: {
+                    game: {
+                        name: 'התאמת כרטיסים',
+                        type: 'cards_match',
+                        categories: {},
+                        pairs: [],
+                        exerciseCount: 10,
+                        grid: { rows: 5, cols: 6 }
+                    }
+                }
             }
         };
 
@@ -184,6 +199,8 @@ class GameConfig {
             return this.generateLanguageExercise();
         } else if (this.config.type === 'gifted' || this.config.type === 'english_sounds' || this.config.type === 'multiple_choice') {
             return this.generateGiftedExercise();
+        } else if (this.config.type === 'cards_match') {
+            return this.generateCardsMatchExercise();
         }
         return null;
     }
@@ -284,6 +301,35 @@ class GameConfig {
             correctAnswer: randomItem.answer,
             choices: randomItem.choices,
             data: randomItem
+        };
+    }
+
+    generateCardsMatchExercise() {
+        const allPairs = Array.isArray(this.config.pairs) ? this.config.pairs : [];
+        const availablePairs = allPairs.filter(pair =>
+            this.selectedCategories.size === 0 || this.selectedCategories.has(pair.category)
+        );
+        if (availablePairs.length < 4) return null;
+        const picked = [];
+        const used = new Set();
+        while (picked.length < 4 && used.size < availablePairs.length) {
+            const idx = Math.floor(Math.random() * availablePairs.length);
+            if (!used.has(idx)) {
+                used.add(idx);
+                picked.push(availablePairs[idx]);
+            }
+        }
+        const leftItems = picked.map((p, i) => ({ text: p.left, pairId: i }));
+        const rightItems = picked.map((p, i) => ({ text: p.right, pairId: i }));
+        for (let i = rightItems.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [rightItems[i], rightItems[j]] = [rightItems[j], rightItems[i]];
+        }
+        return {
+            type: 'cards_match',
+            question: '',
+            correctAnswer: null,
+            data: { pairs: picked, leftItems, rightItems }
         };
     }
 
@@ -919,7 +965,7 @@ class MathMemoryGame {
                     alert('אנא בחר לפחות פעולה אחת!');
                     return;
                 }
-            } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted' || this.gameConfig.config.type === 'english_sounds') {
+            } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted' || this.gameConfig.config.type === 'english_sounds' || this.gameConfig.config.type === 'cards_match') {
                 // Language/gifted/english_sounds game validation
                 if (this.gameConfig.selectedCategories.size === 0) {
                     alert('אנא בחר לפחות קטגוריה אחת!');
@@ -1255,7 +1301,7 @@ class MathMemoryGame {
                     break;
                 }
             }
-        } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted' || this.gameConfig.config.type === 'multiple_choice') {
+        } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted' || this.gameConfig.config.type === 'multiple_choice' || this.gameConfig.config.type === 'cards_match') {
             let attempts = 0;
             while (this.exercises.length < this.gameConfig.config.exerciseCount && attempts < 200) {
                 const exercise = this.gameConfig.generateExercise();
@@ -1265,6 +1311,8 @@ class MathMemoryGame {
                         key = `${exercise.data.hebrew}-${exercise.data.english}`;
                     } else if (exercise.type === 'gifted' || exercise.type === 'multiple_choice') {
                         key = exercise.question;
+                    } else if (exercise.type === 'cards_match') {
+                        key = exercise.data.pairs.map(p => `${p.left}|${p.right}`).sort().join(';');
                     } else {
                         key = JSON.stringify(exercise);
                     }
@@ -1371,10 +1419,82 @@ class MathMemoryGame {
             `${((this.currentExercise + 1) / this.gameConfig.config.exerciseCount) * 100}%`;
         this.startTime = Date.now();
         this.startTimer();
-        // Multiple choice logic
+        // Multiple choice or cards match UI
         const mcContainer = document.getElementById('multipleChoiceContainer');
+        const cmContainer = document.getElementById('cardsMatchContainer');
         const nextBtn = document.getElementById('nextButton');
-        if (this.multipleChoiceMode) {
+        if (this.gameConfig.config.type === 'cards_match') {
+            // Hide multiple choice
+            mcContainer.innerHTML = '';
+            mcContainer.style.display = 'none';
+            // Hide next button (auto-advance after matches)
+            nextBtn.style.display = 'none';
+            // Show cards match container
+            cmContainer.style.display = 'flex';
+            cmContainer.style.direction = direction;
+            cmContainer.innerHTML = '';
+
+            const leftCol = document.createElement('div');
+            leftCol.className = 'cards-column';
+            const rightCol = document.createElement('div');
+            rightCol.className = 'cards-column';
+
+            const state = { selectedLeftIdx: null, selectedRightIdx: null, matchedCount: 0 };
+
+            const renderBtn = (item, idx, side) => {
+                const btn = document.createElement('button');
+                btn.className = 'card-btn';
+                btn.dataset.side = side;
+                btn.dataset.idx = String(idx);
+                btn.dataset.pairId = String(item.pairId);
+                btn.style.direction = direction;
+                if (isImagePath(item.text)) {
+                    btn.innerHTML = `<img src="${item.text}" class="exercise-image" alt="card">`;
+                } else {
+                    btn.textContent = item.text;
+                }
+                btn.onclick = () => {
+                    if (btn.classList.contains('matched')) return;
+                    if (side === 'left') {
+                        leftCol.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        state.selectedLeftIdx = idx;
+                    } else {
+                        rightCol.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        state.selectedRightIdx = idx;
+                    }
+                    if (state.selectedLeftIdx !== null && state.selectedRightIdx !== null) {
+                        const lBtn = leftCol.querySelector(`.card-btn[data-idx="${state.selectedLeftIdx}"]`);
+                        const rBtn = rightCol.querySelector(`.card-btn[data-idx="${state.selectedRightIdx}"]`);
+                        if (lBtn && rBtn) {
+                            const lp = Number(lBtn.dataset.pairId);
+                            const rp = Number(rBtn.dataset.pairId);
+                            if (lp === rp) {
+                                lBtn.classList.add('matched');
+                                rBtn.classList.add('matched');
+                                lBtn.disabled = true;
+                                rBtn.disabled = true;
+                                state.matchedCount++;
+                                state.selectedLeftIdx = null;
+                                state.selectedRightIdx = null;
+                                leftCol.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
+                                rightCol.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
+                                if (state.matchedCount === 4) {
+                                    this.handleAnswer();
+                                }
+                            }
+                        }
+                    }
+                };
+                return btn;
+            };
+
+            exercise.data.leftItems.forEach((item, idx) => leftCol.appendChild(renderBtn(item, idx, 'left')));
+            exercise.data.rightItems.forEach((item, idx) => rightCol.appendChild(renderBtn(item, idx, 'right')));
+            cmContainer.appendChild(leftCol);
+            cmContainer.appendChild(rightCol);
+        } else if (this.multipleChoiceMode) {
             // Hide next button
             nextBtn.style.display = 'none';
             // Apply direction to multiple choice container
@@ -1383,6 +1503,9 @@ class MathMemoryGame {
             const choices = this.gameConfig.generateChoices(exercise.correctAnswer, exercise.data);
             // Render buttons
             mcContainer.innerHTML = '';
+            mcContainer.style.display = 'flex';
+            // Hide cards match container
+            cmContainer.style.display = 'none';
             choices.forEach(choice => {
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
@@ -1411,6 +1534,9 @@ class MathMemoryGame {
         } else {
             // Not multiple choice: hide container, show next button
             mcContainer.innerHTML = '';
+            mcContainer.style.display = 'none';
+            const cmContainerEl = document.getElementById('cardsMatchContainer');
+            if (cmContainerEl) cmContainerEl.style.display = 'none';
             nextBtn.style.display = '';
         }
     }
