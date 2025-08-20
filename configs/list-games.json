@@ -3,6 +3,5 @@
   { "type": "hebrew_vocabulary", "name": "אוצר מילים עברית" },
   { "type": "gifted", "name": "מחוננים" },
   { "type": "language", "name": "אנגלית" },
-  { "type": "english_sounds", "name": "צלילי אנגלית" },
-  { "type": "cards_match", "name": "התאמת כרטיסים" }
+  { "type": "english_sounds", "name": "צלילי אנגלית" }
 ] 

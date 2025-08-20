@@ -120,21 +120,6 @@ class GameConfig {
                         grid: { rows: 5, cols: 6 } 
                     } 
                 } 
-            },
-            'cards_match': {
-                path: 'configs/cards_match.yaml',
-                key: 'game',
-                fallbackJson: 'configs/cards_match.json',
-                fallbackMinimal: {
-                    game: {
-                        name: 'התאמת כרטיסים',
-                        type: 'cards_match',
-                        categories: {},
-                        pairs: [],
-                        exerciseCount: 10,
-                        grid: { rows: 5, cols: 6 }
-                    }
-                }
             }
         };
 
@@ -199,8 +184,6 @@ class GameConfig {
             return this.generateLanguageExercise();
         } else if (this.config.type === 'gifted' || this.config.type === 'english_sounds' || this.config.type === 'multiple_choice') {
             return this.generateGiftedExercise();
-        } else if (this.config.type === 'cards_match') {
-            return this.generateCardsMatchExercise();
         }
         return null;
     }
@@ -304,34 +287,7 @@ class GameConfig {
         };
     }
 
-    generateCardsMatchExercise() {
-        const allPairs = Array.isArray(this.config.pairs) ? this.config.pairs : [];
-        const availablePairs = allPairs.filter(pair =>
-            this.selectedCategories.size === 0 || this.selectedCategories.has(pair.category)
-        );
-        if (availablePairs.length < 4) return null;
-        const picked = [];
-        const used = new Set();
-        while (picked.length < 4 && used.size < availablePairs.length) {
-            const idx = Math.floor(Math.random() * availablePairs.length);
-            if (!used.has(idx)) {
-                used.add(idx);
-                picked.push(availablePairs[idx]);
-            }
-        }
-        const leftItems = picked.map((p, i) => ({ text: p.left, pairId: i }));
-        const rightItems = picked.map((p, i) => ({ text: p.right, pairId: i }));
-        for (let i = rightItems.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [rightItems[i], rightItems[j]] = [rightItems[j], rightItems[i]];
-        }
-        return {
-            type: 'cards_match',
-            question: '',
-            correctAnswer: null,
-            data: { pairs: picked, leftItems, rightItems }
-        };
-    }
+    
 
     generateChoices(correctAnswer, exerciseData) {
         if (this.config.type === 'math') {
@@ -502,6 +458,7 @@ class MathMemoryGame {
         this.successAudio = new Audio('audio/success.mp3');
         this.successAudio.volume = 0.5; // Optional: set volume lower if needed
         this.multipleChoiceMode = false;
+        this.cardsMatchMode = false;
         this.errors = []; // Track errors made during the game
 
         this.initGame();
@@ -570,6 +527,7 @@ class MathMemoryGame {
             // Load timer and multiple choice settings
             this.showTimer = settings.showTimer !== undefined ? settings.showTimer : true;
             this.multipleChoiceMode = settings.multipleChoiceMode !== undefined ? settings.multipleChoiceMode : false;
+            this.cardsMatchMode = settings.cardsMatchMode !== undefined ? settings.cardsMatchMode : false;
         } else {
             // Default settings
             this.operations = {
@@ -590,7 +548,8 @@ class MathMemoryGame {
             operations: this.operations,
             selectedNumbers: Array.from(this.selectedNumbers),
             showTimer: this.showTimer,
-            multipleChoiceMode: this.multipleChoiceMode
+            multipleChoiceMode: this.multipleChoiceMode,
+            cardsMatchMode: this.cardsMatchMode
         };
         localStorage.setItem(`mathGameSettings_${this.currentUser}`, JSON.stringify(settings));
     }
@@ -665,6 +624,7 @@ class MathMemoryGame {
             this.selectedNumbers = new Set();
             this.showTimer = true;
             this.multipleChoiceMode = false;
+            this.cardsMatchMode = false;
             return;
         }
 
@@ -687,6 +647,10 @@ class MathMemoryGame {
         const multipleChoiceCheckbox = document.getElementById('multipleChoiceMode');
         if (multipleChoiceCheckbox) {
             multipleChoiceCheckbox.checked = this.multipleChoiceMode;
+        }
+        const cardsMatchCheckbox = document.getElementById('cardsMatchMode');
+        if (cardsMatchCheckbox) {
+            cardsMatchCheckbox.checked = this.cardsMatchMode;
         }
     }
 
@@ -742,6 +706,16 @@ class MathMemoryGame {
             this.multipleChoiceMode = e.target.checked;
             this.saveUserSettings();
         });
+
+        // Set up cards match checkbox
+        const cardsMatchCheckbox = document.getElementById('cardsMatchMode');
+        if (cardsMatchCheckbox) {
+            cardsMatchCheckbox.checked = this.cardsMatchMode;
+            cardsMatchCheckbox.addEventListener('change', (e) => {
+                this.cardsMatchMode = e.target.checked;
+                this.saveUserSettings();
+            });
+        }
 
         // Set up timer checkbox
         const showTimerCheckbox = document.getElementById('showTimerCheckbox');
@@ -965,7 +939,7 @@ class MathMemoryGame {
                     alert('אנא בחר לפחות פעולה אחת!');
                     return;
                 }
-            } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted' || this.gameConfig.config.type === 'english_sounds' || this.gameConfig.config.type === 'cards_match') {
+            } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted' || this.gameConfig.config.type === 'english_sounds') {
                 // Language/gifted/english_sounds game validation
                 if (this.gameConfig.selectedCategories.size === 0) {
                     alert('אנא בחר לפחות קטגוריה אחת!');
@@ -1022,7 +996,7 @@ class MathMemoryGame {
                 this.currentExercise < 20 && 
                 !this.isPaused && 
                 document.getElementById('gameScreen').style.display === 'block') {
-                if (this.multipleChoiceMode) return; // Prevent spacebar in multiple choice mode
+                if (this.multipleChoiceMode || this.cardsMatchMode) return; // Prevent spacebar in multiple choice or cards match mode
                 e.preventDefault();
                 this.handleAnswer();
             }
@@ -1032,7 +1006,8 @@ class MathMemoryGame {
         document.getElementById('nextButton').addEventListener('click', () => {
             if (this.currentExercise < 20 && 
                 !this.isPaused && 
-                document.getElementById('gameScreen').style.display === 'block') {
+                document.getElementById('gameScreen').style.display === 'block' &&
+                !this.cardsMatchMode) { // Prevent next button in cards match mode
                 this.handleAnswer();
             }
         });
@@ -1301,7 +1276,7 @@ class MathMemoryGame {
                     break;
                 }
             }
-        } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted' || this.gameConfig.config.type === 'multiple_choice' || this.gameConfig.config.type === 'cards_match') {
+        } else if (this.gameConfig.config.type === 'language' || this.gameConfig.config.type === 'gifted' || this.gameConfig.config.type === 'multiple_choice') {
             let attempts = 0;
             while (this.exercises.length < this.gameConfig.config.exerciseCount && attempts < 200) {
                 const exercise = this.gameConfig.generateExercise();
@@ -1311,8 +1286,6 @@ class MathMemoryGame {
                         key = `${exercise.data.hebrew}-${exercise.data.english}`;
                     } else if (exercise.type === 'gifted' || exercise.type === 'multiple_choice') {
                         key = exercise.question;
-                    } else if (exercise.type === 'cards_match') {
-                        key = exercise.data.pairs.map(p => `${p.left}|${p.right}`).sort().join(';');
                     } else {
                         key = JSON.stringify(exercise);
                     }
@@ -1377,6 +1350,8 @@ class MathMemoryGame {
         // For gifted, force multiple choice; for english_sounds, let user control
         const mcCheckbox = document.getElementById('multipleChoiceMode');
         this.multipleChoiceMode = mcCheckbox && mcCheckbox.checked;
+        const cmCheckbox = document.getElementById('cardsMatchMode');
+        this.cardsMatchMode = cmCheckbox && cmCheckbox.checked;
         this.showNextExercise();
 
         document.getElementById('exercise').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1423,77 +1398,87 @@ class MathMemoryGame {
         const mcContainer = document.getElementById('multipleChoiceContainer');
         const cmContainer = document.getElementById('cardsMatchContainer');
         const nextBtn = document.getElementById('nextButton');
-        if (this.gameConfig.config.type === 'cards_match') {
-            // Hide multiple choice
-            mcContainer.innerHTML = '';
-            mcContainer.style.display = 'none';
-            // Hide next button (auto-advance after matches)
+        if (this.cardsMatchMode) {
+            // Cards Match Mode: Create pairs from current exercise content
             nextBtn.style.display = 'none';
-            // Show cards match container
             cmContainer.style.display = 'flex';
             cmContainer.style.direction = direction;
             cmContainer.innerHTML = '';
-
-            const leftCol = document.createElement('div');
-            leftCol.className = 'cards-column';
-            const rightCol = document.createElement('div');
-            rightCol.className = 'cards-column';
-
-            const state = { selectedLeftIdx: null, selectedRightIdx: null, matchedCount: 0 };
-
-            const renderBtn = (item, idx, side) => {
-                const btn = document.createElement('button');
-                btn.className = 'card-btn';
-                btn.dataset.side = side;
-                btn.dataset.idx = String(idx);
-                btn.dataset.pairId = String(item.pairId);
-                btn.style.direction = direction;
-                if (isImagePath(item.text)) {
-                    btn.innerHTML = `<img src="${item.text}" class="exercise-image" alt="card">`;
-                } else {
-                    btn.textContent = item.text;
-                }
-                btn.onclick = () => {
-                    if (btn.classList.contains('matched')) return;
-                    if (side === 'left') {
-                        leftCol.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
-                        btn.classList.add('selected');
-                        state.selectedLeftIdx = idx;
+            
+            // Generate 4 pairs from the current exercise
+            const pairs = this.generateCardPairsFromExercise(exercise);
+            if (pairs.length === 4) {
+                const leftCol = document.createElement('div');
+                leftCol.className = 'cards-column';
+                const rightCol = document.createElement('div');
+                rightCol.className = 'cards-column';
+                
+                const state = { selectedLeftIdx: null, selectedRightIdx: null, matchedCount: 0 };
+                
+                const renderBtn = (item, idx, side) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'card-btn';
+                    btn.dataset.side = side;
+                    btn.dataset.idx = String(idx);
+                    btn.dataset.pairId = String(item.pairId);
+                    btn.style.direction = direction;
+                    if (isImagePath(item.text)) {
+                        btn.innerHTML = `<img src="${item.text}" class="exercise-image" alt="card">`;
                     } else {
-                        rightCol.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
-                        btn.classList.add('selected');
-                        state.selectedRightIdx = idx;
+                        btn.textContent = item.text;
                     }
-                    if (state.selectedLeftIdx !== null && state.selectedRightIdx !== null) {
-                        const lBtn = leftCol.querySelector(`.card-btn[data-idx="${state.selectedLeftIdx}"]`);
-                        const rBtn = rightCol.querySelector(`.card-btn[data-idx="${state.selectedRightIdx}"]`);
-                        if (lBtn && rBtn) {
-                            const lp = Number(lBtn.dataset.pairId);
-                            const rp = Number(rBtn.dataset.pairId);
-                            if (lp === rp) {
-                                lBtn.classList.add('matched');
-                                rBtn.classList.add('matched');
-                                lBtn.disabled = true;
-                                rBtn.disabled = true;
-                                state.matchedCount++;
-                                state.selectedLeftIdx = null;
-                                state.selectedRightIdx = null;
-                                leftCol.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
-                                rightCol.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
-                                if (state.matchedCount === 4) {
-                                    this.handleAnswer();
+                    btn.onclick = () => {
+                        if (btn.classList.contains('matched')) return;
+                        if (side === 'left') {
+                            leftCol.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
+                            btn.classList.add('selected');
+                            state.selectedLeftIdx = idx;
+                        } else {
+                            rightCol.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
+                            btn.classList.add('selected');
+                            state.selectedRightIdx = idx;
+                        }
+                        if (state.selectedLeftIdx !== null && state.selectedRightIdx !== null) {
+                            const lBtn = leftCol.querySelector(`.card-btn[data-idx="${state.selectedLeftIdx}"]`);
+                            const rBtn = rightCol.querySelector(`.card-btn[data-idx="${state.selectedRightIdx}"]`);
+                            if (lBtn && rBtn) {
+                                const lp = Number(lBtn.dataset.pairId);
+                                const rp = Number(rBtn.dataset.pairId);
+                                if (lp === rp) {
+                                    lBtn.classList.add('matched');
+                                    rBtn.classList.add('matched');
+                                    lBtn.disabled = true;
+                                    rBtn.disabled = true;
+                                    state.matchedCount++;
+                                    state.selectedLeftIdx = null;
+                                    state.selectedRightIdx = null;
+                                    leftCol.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
+                                    rightCol.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
+                                    if (state.matchedCount === 4) {
+                                        this.handleAnswer();
+                                    }
                                 }
                             }
                         }
-                    }
+                    };
+                    return btn;
                 };
-                return btn;
-            };
-
-            exercise.data.leftItems.forEach((item, idx) => leftCol.appendChild(renderBtn(item, idx, 'left')));
-            exercise.data.rightItems.forEach((item, idx) => rightCol.appendChild(renderBtn(item, idx, 'right')));
-            cmContainer.appendChild(leftCol);
-            cmContainer.appendChild(rightCol);
+                
+                pairs.forEach((pair, idx) => {
+                    leftCol.appendChild(renderBtn({ text: pair.left, pairId: idx }, idx, 'left'));
+                    rightCol.appendChild(renderBtn({ text: pair.right, pairId: idx }, idx, 'right'));
+                });
+                
+                // Shuffle right column
+                const rightButtons = Array.from(rightCol.children);
+                for (let i = rightButtons.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    rightCol.appendChild(rightButtons[j]);
+                }
+                
+                cmContainer.appendChild(leftCol);
+                cmContainer.appendChild(rightCol);
+            }
         } else if (this.multipleChoiceMode) {
             // Hide next button
             nextBtn.style.display = 'none';
@@ -1539,6 +1524,113 @@ class MathMemoryGame {
             if (cmContainerEl) cmContainerEl.style.display = 'none';
             nextBtn.style.display = '';
         }
+    }
+
+    generateCardPairsFromExercise(exercise) {
+        const pairs = [];
+        
+        if (exercise.type === 'math') {
+            // For math: create pairs like "5 + 3" and "8"
+            const { num1, num2, operation } = exercise.data;
+            const symbol = this.gameConfig.getOperationSymbol(operation);
+            const question = `${num1} ${symbol} ${num2}`;
+            const answer = exercise.correctAnswer;
+            
+            // Create 4 pairs: the correct one + 3 wrong ones
+            pairs.push({ left: question, right: answer });
+            
+            // Generate 3 wrong answers
+            const wrongAnswers = [];
+            const used = new Set([answer]);
+            while (wrongAnswers.length < 3) {
+                let wrong;
+                if (operation === 'addition') {
+                    wrong = answer + (Math.floor(Math.random() * 10) - 5);
+                } else if (operation === 'subtraction') {
+                    wrong = answer + (Math.floor(Math.random() * 10) - 5);
+                } else if (operation === 'multiplication') {
+                    wrong = answer + (Math.floor(Math.random() * 10) - 5);
+                } else if (operation === 'division') {
+                    wrong = answer + (Math.floor(Math.random() * 10) - 5);
+                }
+                if (!used.has(wrong) && wrong >= 0 && wrong <= 100) {
+                    wrongAnswers.push(wrong);
+                    used.add(wrong);
+                }
+            }
+            
+            // Add wrong pairs
+            wrongAnswers.forEach(wrong => {
+                pairs.push({ left: question, right: wrong });
+            });
+            
+        } else if (exercise.type === 'language') {
+            // For language: create pairs like "כלב" and "dog"
+            const { hebrew, english } = exercise.data;
+            
+            // Create 4 pairs: the correct one + 3 wrong ones
+            pairs.push({ left: hebrew, right: english });
+            
+            // Get other English words from the same category
+            const sameCategoryWords = this.gameConfig.config.content
+                .filter(item => item.category === exercise.data.category && item.english !== english)
+                .map(item => item.english);
+            
+            // Get words from other categories
+            const otherCategoryWords = this.gameConfig.config.content
+                .filter(item => item.category !== exercise.data.category)
+                .map(item => item.english);
+            
+            // Add wrong pairs
+            let wrongCount = 0;
+            for (const word of sameCategoryWords) {
+                if (wrongCount >= 3) break;
+                pairs.push({ left: hebrew, right: word });
+                wrongCount++;
+            }
+            
+            for (const word of otherCategoryWords) {
+                if (wrongCount >= 3) break;
+                pairs.push({ left: hebrew, right: word });
+                wrongCount++;
+            }
+            
+            // If we still don't have enough, add some common words
+            const commonWords = ['the', 'and', 'is', 'are', 'was', 'were'];
+            for (const word of commonWords) {
+                if (wrongCount >= 3) break;
+                pairs.push({ left: hebrew, right: word });
+                wrongCount++;
+            }
+            
+        } else if (exercise.type === 'gifted' || exercise.type === 'multiple_choice') {
+            // For gifted/multiple choice: create pairs like question and answer
+            const question = exercise.question;
+            const answer = exercise.correctAnswer;
+            
+            pairs.push({ left: question, right: answer });
+            
+            // Add wrong pairs from choices
+            if (exercise.choices && Array.isArray(exercise.choices)) {
+                exercise.choices.forEach(choice => {
+                    if (choice !== answer && pairs.length < 4) {
+                        pairs.push({ left: question, right: choice });
+                    }
+                });
+            }
+            
+            // If we still don't have enough, add some generic wrong answers
+            while (pairs.length < 4) {
+                pairs.push({ left: question, right: `Wrong ${pairs.length}` });
+            }
+        }
+        
+        // Ensure we have exactly 4 pairs
+        if (pairs.length > 4) {
+            pairs.splice(4);
+        }
+        
+        return pairs;
     }
 
     startTimer() {
