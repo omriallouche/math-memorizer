@@ -1528,108 +1528,60 @@ class MathMemoryGame {
 
     generateCardPairsFromExercise(exercise) {
         const pairs = [];
-        
+
         if (exercise.type === 'math') {
             // For math: create pairs like "5 + 3" and "8"
             const { num1, num2, operation } = exercise.data;
             const symbol = this.gameConfig.getOperationSymbol(operation);
             const question = `${num1} ${symbol} ${num2}`;
             const answer = exercise.correctAnswer;
-            
-            // Create 4 pairs: the correct one + 3 wrong ones
+
+            // Create 4 unique pairs
             pairs.push({ left: question, right: answer });
-            
-            // Generate 3 wrong answers
-            const wrongAnswers = [];
-            const used = new Set([answer]);
-            while (wrongAnswers.length < 3) {
-                let wrong;
-                if (operation === 'addition') {
-                    wrong = answer + (Math.floor(Math.random() * 10) - 5);
-                } else if (operation === 'subtraction') {
-                    wrong = answer + (Math.floor(Math.random() * 10) - 5);
-                } else if (operation === 'multiplication') {
-                    wrong = answer + (Math.floor(Math.random() * 10) - 5);
-                } else if (operation === 'division') {
-                    wrong = answer + (Math.floor(Math.random() * 10) - 5);
-                }
-                if (!used.has(wrong) && wrong >= 0 && wrong <= 100) {
-                    wrongAnswers.push(wrong);
-                    used.add(wrong);
-                }
-            }
-            
-            // Add wrong pairs
-            wrongAnswers.forEach(wrong => {
-                pairs.push({ left: question, right: wrong });
-            });
-            
-        } else if (exercise.type === 'language') {
-            // For language: create pairs like "כלב" and "dog"
-            const { hebrew, english } = exercise.data;
-            
-            // Create 4 pairs: the correct one + 3 wrong ones
-            pairs.push({ left: hebrew, right: english });
-            
-            // Get other English words from the same category
-            const sameCategoryWords = this.gameConfig.config.content
-                .filter(item => item.category === exercise.data.category && item.english !== english)
-                .map(item => item.english);
-            
-            // Get words from other categories
-            const otherCategoryWords = this.gameConfig.config.content
-                .filter(item => item.category !== exercise.data.category)
-                .map(item => item.english);
-            
-            // Add wrong pairs
-            let wrongCount = 0;
-            for (const word of sameCategoryWords) {
-                if (wrongCount >= 3) break;
-                pairs.push({ left: hebrew, right: word });
-                wrongCount++;
-            }
-            
-            for (const word of otherCategoryWords) {
-                if (wrongCount >= 3) break;
-                pairs.push({ left: hebrew, right: word });
-                wrongCount++;
-            }
-            
-            // If we still don't have enough, add some common words
-            const commonWords = ['the', 'and', 'is', 'are', 'was', 'were'];
-            for (const word of commonWords) {
-                if (wrongCount >= 3) break;
-                pairs.push({ left: hebrew, right: word });
-                wrongCount++;
-            }
-            
-        } else if (exercise.type === 'gifted' || exercise.type === 'multiple_choice') {
-            // For gifted/multiple choice: create pairs like question and answer
-            const question = exercise.question;
-            const answer = exercise.correctAnswer;
-            
-            pairs.push({ left: question, right: answer });
-            
-            // Add wrong pairs from choices
-            if (exercise.choices && Array.isArray(exercise.choices)) {
-                exercise.choices.forEach(choice => {
-                    if (choice !== answer && pairs.length < 4) {
-                        pairs.push({ left: question, right: choice });
-                    }
-                });
-            }
-            
-            // If we still don't have enough, add some generic wrong answers
+
+            // Generate 3 additional unique pairs
+            const usedQuestions = new Set([question]);
+            const usedAnswers = new Set([answer]);
+
             while (pairs.length < 4) {
-                pairs.push({ left: question, right: `Wrong ${pairs.length}` });
+                let newNum1 = Math.floor(Math.random() * 10) + 1;
+                let newNum2 = Math.floor(Math.random() * 10) + 1;
+                let newAnswer;
+                let newQuestion;
+
+                if (operation === 'addition') {
+                    newAnswer = newNum1 + newNum2;
+                    newQuestion = `${newNum1} + ${newNum2}`;
+                } else if (operation === 'subtraction') {
+                    newAnswer = newNum1 - newNum2;
+                    newQuestion = `${newNum1} - ${newNum2}`;
+                } else if (operation === 'multiplication') {
+                    newAnswer = newNum1 * newNum2;
+                    newQuestion = `${newNum1} * ${newNum2}`;
+                } else if (operation === 'division' && newNum2 !== 0) {
+                    newAnswer = Math.floor(newNum1 / newNum2);
+                    newQuestion = `${newNum1} / ${newNum2}`;
+                }
+
+                if (
+                    newQuestion &&
+                    newAnswer !== undefined &&
+                    !usedQuestions.has(newQuestion) &&
+                    !usedAnswers.has(newAnswer)
+                ) {
+                    pairs.push({ left: newQuestion, right: newAnswer });
+                    usedQuestions.add(newQuestion);
+                    usedAnswers.add(newAnswer);
+                }
             }
         }
-        
-        // Ensure we have exactly 4 pairs
-        if (pairs.length > 4) {
-            pairs.splice(4);
+
+        // Shuffle the pairs to randomize their order
+        for (let i = pairs.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
         }
-        
+
         return pairs;
     }
 
@@ -1978,4 +1930,4 @@ window.addEventListener('load', async () => {
         // Initialize the game with fallback options
         new MathMemoryGame();
     }
-}); 
+});
