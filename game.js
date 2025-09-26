@@ -470,6 +470,7 @@ class MathMemoryGame {
         this.loadUsers();
         this.initializeUI();
         this.setupEventListeners();
+        this.loadSessionState();
     }
 
     async loadImages() {
@@ -1030,6 +1031,21 @@ class MathMemoryGame {
                 this.updateReviewList();
             });
         });
+
+        // Home button
+        document.getElementById('homeButton').addEventListener('click', () => {
+            this.goToHome();
+        });
+
+        // Persist session on backgrounding or page unload
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                this.saveSessionState();
+            }
+        });
+        window.addEventListener('beforeunload', () => {
+            this.saveSessionState();
+        });
     }
 
     showUserManagement() {
@@ -1185,6 +1201,34 @@ class MathMemoryGame {
     hideReview() {
         document.getElementById('reviewScreen').style.display = 'none';
         document.getElementById('gameSetup').style.display = 'block';
+    }
+
+    goToHome() {
+        // Clear any active timers
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+        }
+        if (this.totalTimerInterval) {
+            clearInterval(this.totalTimerInterval);
+        }
+        
+        // Hide all screens and show the main setup screen
+        document.getElementById('gameScreen').style.display = 'none';
+        document.getElementById('endScreen').style.display = 'none';
+        document.getElementById('statsScreen').style.display = 'none';
+        document.getElementById('tutorialScreen').style.display = 'none';
+        document.getElementById('userManagement').style.display = 'none';
+        document.getElementById('reviewScreen').style.display = 'none';
+        document.getElementById('gameSetup').style.display = 'block';
+        
+        // Clear session state when going home
+        this.clearSessionState();
+        
+        // Reset game state
+        this.currentExercise = 0;
+        this.isPaused = false;
+        this.totalTime = 0;
+        this.errors = [];
     }
 
     updateReviewList() {
@@ -1355,6 +1399,8 @@ class MathMemoryGame {
         this.showNextExercise();
 
         document.getElementById('exercise').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        this.saveSessionState();
     }
 
     showNextExercise() {
@@ -1404,6 +1450,9 @@ class MathMemoryGame {
             cmContainer.style.display = 'flex';
             cmContainer.style.direction = direction;
             cmContainer.innerHTML = '';
+            
+            // Hide the exercise div in Card Match mode since we have multiple exercises
+            document.getElementById('exercise').style.display = 'none';
             
             // Generate 4 pairs from the current exercise
             const pairs = this.generateCardPairsFromExercise(exercise);
@@ -1491,6 +1540,9 @@ class MathMemoryGame {
             mcContainer.style.display = 'flex';
             // Hide cards match container
             cmContainer.style.display = 'none';
+            
+            // Show the exercise div in multiple choice mode
+            document.getElementById('exercise').style.display = 'block';
             choices.forEach(choice => {
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
@@ -1523,6 +1575,9 @@ class MathMemoryGame {
             const cmContainerEl = document.getElementById('cardsMatchContainer');
             if (cmContainerEl) cmContainerEl.style.display = 'none';
             nextBtn.style.display = '';
+            
+            // Show the exercise div when not in Card Match mode
+            document.getElementById('exercise').style.display = 'block';
         }
     }
 
@@ -1572,6 +1627,75 @@ class MathMemoryGame {
                     pairs.push({ left: newQuestion, right: newAnswer });
                     usedQuestions.add(newQuestion);
                     usedAnswers.add(newAnswer);
+                }
+            }
+        } else if (exercise.type === 'language') {
+            // For language: create pairs like "כלב" and "dog"
+            const question = exercise.question; // Hebrew word
+            const answer = exercise.correctAnswer; // English word
+
+            // Create 4 unique pairs
+            pairs.push({ left: question, right: answer });
+
+            // Generate 3 additional unique pairs from the same category
+            const usedQuestions = new Set([question]);
+            const usedAnswers = new Set([answer]);
+            const category = exercise.data.category;
+
+            // Get other words from the same category
+            const sameCategoryWords = this.gameConfig.config.content
+                .filter(item => item.category === category && item.hebrew !== question)
+                .slice(0, 3);
+
+            sameCategoryWords.forEach(item => {
+                if (pairs.length < 4 && !usedQuestions.has(item.hebrew) && !usedAnswers.has(item.english)) {
+                    pairs.push({ left: item.hebrew, right: item.english });
+                    usedQuestions.add(item.hebrew);
+                    usedAnswers.add(item.english);
+                }
+            });
+
+            // Fill remaining slots with random words from other categories if needed
+            while (pairs.length < 4) {
+                const randomItem = this.gameConfig.config.content[Math.floor(Math.random() * this.gameConfig.config.content.length)];
+                if (!usedQuestions.has(randomItem.hebrew) && !usedAnswers.has(randomItem.english)) {
+                    pairs.push({ left: randomItem.hebrew, right: randomItem.english });
+                    usedQuestions.add(randomItem.hebrew);
+                    usedAnswers.add(randomItem.english);
+                }
+            }
+        } else if (exercise.type === 'gifted' || exercise.type === 'multiple_choice') {
+            // For gifted/english_sounds: create pairs like "What is 2+2?" and "4"
+            const question = exercise.question;
+            const answer = exercise.correctAnswer;
+
+            // Create 4 unique pairs
+            pairs.push({ left: question, right: answer });
+
+            // Generate 3 additional unique pairs from the same content
+            const usedQuestions = new Set([question]);
+            const usedAnswers = new Set([answer]);
+
+            // Get other exercises from the same category
+            const sameCategoryExercises = this.gameConfig.config.content
+                .filter(item => item.category === exercise.data.category && item.question !== question)
+                .slice(0, 3);
+
+            sameCategoryExercises.forEach(item => {
+                if (pairs.length < 4 && !usedQuestions.has(item.question) && !usedAnswers.has(item.answer)) {
+                    pairs.push({ left: item.question, right: item.answer });
+                    usedQuestions.add(item.question);
+                    usedAnswers.add(item.answer);
+                }
+            });
+
+            // Fill remaining slots with random exercises if needed
+            while (pairs.length < 4) {
+                const randomItem = this.gameConfig.config.content[Math.floor(Math.random() * this.gameConfig.config.content.length)];
+                if (!usedQuestions.has(randomItem.question) && !usedAnswers.has(randomItem.answer)) {
+                    pairs.push({ left: randomItem.question, right: randomItem.answer });
+                    usedQuestions.add(randomItem.question);
+                    usedAnswers.add(randomItem.answer);
                 }
             }
         }
@@ -1685,6 +1809,8 @@ class MathMemoryGame {
         
         this.currentExercise++;
         this.showNextExercise();
+
+        this.saveSessionState();
     }
 
     updateStatsTable() {
@@ -1887,6 +2013,143 @@ class MathMemoryGame {
             // Select a random character for next game
             this.currentCharacter = Math.floor(Math.random() * this.characterImages.length);
         };
+
+        this.clearSessionState();
+    }
+
+    getSessionStorageKey() {
+        const userKey = this.currentUser ? `_${this.currentUser}` : '';
+        return `mathGameSession${userKey}`;
+    }
+
+    saveSessionState() {
+        try {
+            const screen = (() => {
+                if (document.getElementById('gameScreen').style.display === 'block') return 'game';
+                if (document.getElementById('endScreen').style.display === 'block') return 'end';
+                if (document.getElementById('statsScreen').style.display === 'block') return 'stats';
+                if (document.getElementById('tutorialScreen').style.display === 'block') return 'tutorial';
+                if (document.getElementById('userManagement').style.display === 'block') return 'users';
+                return 'setup';
+            })();
+
+            const state = {
+                version: 1,
+                inProgress: screen === 'game',
+                screen,
+                userId: this.currentUser,
+                gameType: this.gameConfig.gameType,
+                configType: this.gameConfig.config?.type,
+                selectedNumbers: Array.from(this.selectedNumbers),
+                operations: this.operations,
+                multipleChoiceMode: this.multipleChoiceMode,
+                cardsMatchMode: this.cardsMatchMode,
+                exercises: this.exercises,
+                currentExercise: this.currentExercise,
+                revealOrder: this.revealOrder,
+                currentCharacter: this.currentCharacter,
+                isPaused: this.isPaused,
+                totalTime: this.totalTime,
+                showTimer: this.showTimer,
+                errors: this.errors
+            };
+            localStorage.setItem(this.getSessionStorageKey(), JSON.stringify(state));
+        } catch (e) {
+            console.warn('Failed to save session state:', e);
+        }
+    }
+
+    clearSessionState() {
+        try {
+            localStorage.removeItem(this.getSessionStorageKey());
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    async loadSessionState() {
+        try {
+            const raw = localStorage.getItem(this.getSessionStorageKey());
+            if (!raw) return;
+            const state = JSON.parse(raw);
+            if (!state || !state.inProgress) return;
+
+            if (state.gameType && state.gameType !== this.gameConfig.gameType) {
+                await this.selectGameType(state.gameType);
+            }
+
+            this.selectedNumbers = new Set(Array.isArray(state.selectedNumbers) ? state.selectedNumbers : []);
+            this.operations = state.operations || this.operations;
+            this.multipleChoiceMode = !!state.multipleChoiceMode;
+            this.cardsMatchMode = !!state.cardsMatchMode;
+            this.showTimer = state.showTimer !== undefined ? state.showTimer : this.showTimer;
+
+            this.setupNumberSelection();
+            Object.keys(this.operations).forEach(operation => {
+                const checkbox = document.getElementById(operation);
+                if (checkbox) checkbox.checked = this.operations[operation];
+            });
+            const showTimerCheckbox = document.getElementById('showTimerCheckbox');
+            if (showTimerCheckbox) showTimerCheckbox.checked = this.showTimer;
+            const multipleChoiceCheckbox = document.getElementById('multipleChoiceMode');
+            if (multipleChoiceCheckbox) multipleChoiceCheckbox.checked = this.multipleChoiceMode;
+            const cardsMatchCheckbox = document.getElementById('cardsMatchMode');
+            if (cardsMatchCheckbox) cardsMatchCheckbox.checked = this.cardsMatchMode;
+
+            this.exercises = Array.isArray(state.exercises) ? state.exercises : [];
+            this.currentExercise = Number(state.currentExercise) || 0;
+            this.revealOrder = Array.isArray(state.revealOrder) ? state.revealOrder : [];
+            this.currentCharacter = typeof state.currentCharacter === 'number' ? state.currentCharacter : this.currentCharacter;
+            this.errors = Array.isArray(state.errors) ? state.errors : [];
+
+            this.setupGrid();
+            this.gridCells.forEach(cell => cell.style.opacity = '1');
+            for (let i = 0; i < this.currentExercise && i < this.revealOrder.length; i++) {
+                const idx = this.revealOrder[i];
+                if (this.gridCells[idx]) this.gridCells[idx].style.opacity = '0';
+            }
+
+            const characterContainer = document.getElementById('characterContainer');
+            if (this.characterImages[this.currentCharacter]) {
+                characterContainer.innerHTML = `<img src="${this.characterImages[this.currentCharacter]}" alt="Disney Character">`;
+            }
+
+            document.getElementById('gameSetup').style.display = 'none';
+            document.getElementById('statsScreen').style.display = 'none';
+            document.getElementById('tutorialScreen').style.display = 'none';
+            document.getElementById('endScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+
+            this.isPaused = !!state.isPaused;
+            this.totalTime = typeof state.totalTime === 'number' ? state.totalTime : 0;
+            this.startTime = Date.now();
+            this.startTimer();
+            if (this.totalTimerInterval) clearInterval(this.totalTimerInterval);
+            
+            // Control timer visibility based on configuration
+            const timerContainer = document.querySelector('.timer-container');
+            const totalTimerElement = document.getElementById('totalTimer');
+            if (this.gameConfig.isTimerShown(this.showTimer)) {
+                timerContainer.style.display = 'block';
+                totalTimerElement.textContent = `סה\"כ זמן: ${this.totalTime.toFixed(1)}s`;
+                totalTimerElement.style.display = 'block';
+            } else {
+                timerContainer.style.display = 'none';
+                totalTimerElement.style.display = 'none';
+            }
+            this.totalTimerInterval = setInterval(() => {
+                if (!this.isPaused) {
+                    this.totalTime += 0.1;
+                    if (this.gameConfig.isTimerShown(this.showTimer)) {
+                        totalTimerElement.textContent = `סה\"כ זמן: ${this.totalTime.toFixed(1)}s`;
+                    }
+                }
+            }, 100);
+
+            this.showNextExercise();
+        } catch (e) {
+            console.warn('Failed to load session state:', e);
+        }
     }
 }
 

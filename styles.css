@@ -630,8 +630,10 @@ select {
 }
 
 .card-btn.selected {
-    background: #e0f7f5;
-    border-color: #45b7af;
+    /* background: #e0f7f5;
+    border-color: #45b7af; */
+    background: #e0eef7;
+    border-color: #457bb7;
 }
 
 .card-btn.matched {
@@ -747,4 +749,60 @@ select {
     background-color: #ffebee;
     border-radius: 5px;
     border-left: 4px solid #d32f2f;
+}
+
+/* Home button styling */
+.home-button-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.home-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #4ecdc4;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+    transition: all 0.3s ease;
+}
+
+.home-button:hover {
+    background: #45b7af;
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(78, 205, 196, 0.4);
+}
+
+.home-button:active {
+    transform: scale(0.95);
+}
+
+.home-button svg {
+    fill: currentColor;
+    width: 28px;
+    height: 28px;
+}
+
+@media (max-width: 600px) {
+    .home-button-container {
+        bottom: 15px;
+        right: 15px;
+    }
+    
+    .home-button {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .home-button svg {
+        width: 24px;
+        height: 24px;
+    }
 } 

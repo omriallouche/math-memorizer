@@ -24,8 +24,11 @@ app.use((req, res, next) => {
 // Serve static files from the current directory
 app.use(express.static(__dirname));
 
-// Endpoint to list images
-app.get('/list-images', (req, res) => {
+// Also serve static files under /math-memorizer/ path for GitHub Pages compatibility
+app.use('/math-memorizer', express.static(__dirname));
+
+// Endpoint to list images (works for both root and /math-memorizer/ paths)
+app.get(['/list-images', '/math-memorizer/list-images'], (req, res) => {
     const imagesDir = path.join(__dirname, 'images');
     fs.readdir(imagesDir, (err, files) => {
         if (err) {
@@ -43,8 +46,8 @@ app.get('/list-images', (req, res) => {
     });
 });
 
-// Endpoint to list available games (YAML configs)
-app.get('/list-games', (req, res) => {
+// Endpoint to list available games (YAML configs) - works for both root and /math-memorizer/ paths
+app.get(['/list-games', '/math-memorizer/list-games'], (req, res) => {
     const configsDir = path.join(__dirname, 'configs');
     fs.readdir(configsDir, async (err, files) => {
         if (err) {
